@@ -35,7 +35,7 @@ class Model
 
 
     /**
-     * @param string|array<string> $column_name
+     * @param string|array<string,mixed> $column_name
      * @param mixed|null $value
      *
      * @return $this

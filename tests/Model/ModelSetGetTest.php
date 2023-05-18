@@ -216,4 +216,44 @@ class ModelSetGetTest extends ModelTestBase
         ];
     }
 
+
+    /**
+     * @return void
+     * @throws OrmException
+     */
+    public function testSetManyRollsBackOnError(): void {
+        $user = $this->Orm->Model('users');
+        $user->set('name','foo');
+
+        self::expectExceptionMessage('expected varchar(45), got DateTime');
+        $user->set([
+            'id'=>1,
+            'name'=>new DateTime()
+        ]);
+
+        self::assertEquals(['id'=>null,'name'=>'foo'], $user->get(['id','name']));
+    }
+
+
+    /**
+     * @return void
+     * @throws OrmException
+     */
+    public function testSetManyWorks(): void {
+        $user = $this->Orm->Model('users');
+        $user->set(['id'=>1,'name'=>'foo']);
+
+        self::assertEquals(['id'=>1,'name'=>'foo'], $user->get(['id','name']));
+    }
+
+
+    /**
+     * @return void
+     * @throws OrmException
+     */
+    public function testGetWithNoParamsReturnsAllFields(): void {
+        $user = $this->Orm->Model('users');
+
+        self::assertEquals(['id'=>null,'name'=>null,'password'=>null], $user->get());
+    }
 }

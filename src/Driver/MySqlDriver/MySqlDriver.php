@@ -148,7 +148,7 @@ class MySqlDriver extends Driver
         ];
 
         if (!isset($min_values[$data_type])) {
-            throw new RuntimeException(sprintf('MySqlDatatypeHelper::getMinValue(): unhandled type signed %s', $data_type));
+            throw new RuntimeException(sprintf('MySqlDriver::getMinValue(): unhandled type signed %s', $data_type));
         }
 
         return $min_values[$data_type];
@@ -203,7 +203,7 @@ class MySqlDriver extends Driver
 
         // Check if the provided signed and data type combination is supported
         if (!isset($max_values[$is_signed][$data_type])) {
-            throw new RuntimeException(sprintf('MySqlDatatypeHelper::getMinValue(): unhandled data type: %s %s', $is_signed ? 'signed' : 'unsigned', $data_type));
+            throw new RuntimeException(sprintf('MySqlDriver::getMinValue(): unhandled data type: %s %s', $is_signed ? 'signed' : 'unsigned', $data_type));
         }
 
         // Return the maximum value based on the signed and data type combination
