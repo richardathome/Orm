@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Richbuilds\Orm\Driver\MySqlDriver;
 
+use Richbuilds\Orm\Driver\QueryBuilder;
+
 /**
  * Responsible for building mysql queries
  */
-class MySqlQueryBuilder
+class MySqlQueryBuilder extends QueryBuilder
 {
 
     /**
@@ -48,6 +50,25 @@ WHERE
   AND COLUMNS.TABLE_NAME = :table_name
 ORDER BY COLUMNS.ORDINAL_POSITION;
 SQL;
+    }
+
+
+    /**
+     * @param string $database_name
+     * @param string $table_name
+     *
+     * @param array<string,mixed> $conditions
+     *
+     * @return string
+     */
+    public function buildFetchFirstBy(string $database_name, string $table_name, array $conditions): string
+    {
+        $sql = sprintf('SELECT * FROM `%s`.`%s`',$database_name,$table_name);
+        $sql .= $this->buildWhere($database_name,$table_name,$conditions);
+        $sql .= ' LIMIT 1';
+
+        return $sql .';';
+
     }
 
 }

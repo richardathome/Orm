@@ -96,4 +96,27 @@ class Model
 
         return $this->values[$column_name] ?? null;
     }
+
+    /**
+     * @param array<string,mixed> $conditions
+     *
+     * @return Model
+     *
+     * @throws OrmException
+     */
+    public function fetchBy(array $conditions = []): Model
+    {
+        $this->TableMeta->guardHasColumns(array_keys($conditions));
+
+        $values = $this->Driver->fetchFirstBY($this->TableMeta->database_name, $this->TableMeta->table_name, $conditions);
+
+        if ($values === false) {
+            throw new OrmException(sprintf('%s.%s not found', $this->TableMeta->database_name, $this->TableMeta->table_name));
+        }
+
+        $model = new Model($this->Driver, $this->TableMeta->table_name);
+        $model->set($values);
+
+        return $model;
+    }
 }

@@ -18,7 +18,8 @@ abstract class Driver
      * @param PDO $pdo
      */
     public function __construct(
-        public readonly PDO $pdo
+        public readonly PDO $pdo,
+        public readonly QueryBuilder $QueryBuilder
     )
     {
     }
@@ -31,6 +32,23 @@ abstract class Driver
      * @throws OrmException
      */
     abstract public function fetchTableMeta(string $table_name): TableMeta;
+
+    /**
+     * @param string $database_name
+     * @param string $table_name
+     * @param array<string,mixed> $conditions
+     *
+     * @return array<string,mixed>|false
+     */
+    public function fetchFirstBY(string $database_name, string $table_name, array $conditions): array|false
+    {
+        $sql = $this->QueryBuilder->buildFetchFirstBy($database_name,$table_name,$conditions);
+
+        $stmt = $this->prepareAndExec($sql, $conditions);
+
+        return $stmt->fetch(\PDO::FETCH_ASSOC);
+
+    }
 
     /**
      * @param string $sql

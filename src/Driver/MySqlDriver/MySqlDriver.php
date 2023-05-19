@@ -20,8 +20,6 @@ class MySqlDriver extends Driver
 {
     private string $database_name;
 
-    private MySqlQueryBuilder $QueryBuilder;
-
     /**
      * @var array<string,array<string,TableMeta>> $table_metas
      */
@@ -34,7 +32,7 @@ class MySqlDriver extends Driver
      */
     public function __construct(PDO $pdo)
     {
-        parent::__construct($pdo);
+        parent::__construct($pdo, new MySqlQueryBuilder());
 
         $database_name = (string)$this->fetchSqlValue('SELECT DATABASE();');
 
@@ -43,8 +41,6 @@ class MySqlDriver extends Driver
         }
 
         $this->database_name = $database_name;
-
-        $this->QueryBuilder = new MySqlQueryBuilder();
     }
 
     /**

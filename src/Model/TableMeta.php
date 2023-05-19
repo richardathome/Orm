@@ -37,4 +37,18 @@ class TableMeta
             throw new OrmException(sprintf('unknown column %s in %s.%s', $column_name, $this->database_name, $this->table_name));
         }
     }
+
+    /**
+     * @param array<string> $column_names
+     *
+     * @return void
+     *
+     * @throws OrmException
+     */
+    public function guardHasColumns(array $column_names = []): void
+    {
+        foreach($column_names as $column_name) {
+            $this->guardHasColumn($column_name);
+        }
+    }
 }
