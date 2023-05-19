@@ -17,7 +17,7 @@ abstract class QueryBuilder
      *
      * @return string
      */
-    public function buildFetchFirstBy(string $database_name, string $table_name, array $conditions= []): string
+    public function buildFetchFirstBy(string $database_name, string $table_name, array $conditions = []): string
     {
         $sql = sprintf('SELECT * FROM `%s`.`%s`', $database_name, $table_name);
 
@@ -45,6 +45,10 @@ abstract class QueryBuilder
 
         foreach ($conditions as $column_name => $value) {
             $comparator = '=';
+
+            if (str_contains($column_name, ' ')) {
+                [$column_name, $comparator] = explode(' ', $column_name);
+            }
 
             $sql .= sprintf('`%s`.`%s`.`%s` %s :%s AND ', $database_name, $table_name, $column_name, $comparator, $column_name);
         }

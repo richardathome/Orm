@@ -71,7 +71,7 @@ class Model
     /**
      * @param string|array<string> $column_name
      *
-     * @return mixed
+     * @return mixed|null
      *
      * @throws OrmException
      */
@@ -119,4 +119,50 @@ class Model
 
         return $model;
     }
+
+    /**
+     * @return int|string|array<string,mixed>|null
+     *
+     * @throws OrmException
+     */
+    public function getPk(): int|string|array|null
+    {
+        $this->TableMeta->guardHasPrimaryKey();
+
+        $pk_column_names = $this->TableMeta->pk_columns;
+
+        if (count($pk_column_names) === 1) {
+            return $this->get($pk_column_names[0]);
+        }
+
+        return $this->get($pk_column_names);
+    }
+
+    /**
+     * @param int|string|array<string,mixed> $value
+     *
+     * @return Model
+     *
+     * @throws OrmException
+     */
+    public function fetchByPk(int|string|array $value): Model
+    {
+        $this->TableMeta->guardHasPrimaryKey();
+
+        if (count($this->TableMeta->pk_columns) === 1) {
+
+            if (is_array($value)) {
+                throw new OrmException(sprintf('%s.%s: scalar expected', $this->TableMeta->database_name, $this->TableMeta->table_name));
+            }
+
+            return $this->fetchBy([$this->TableMeta->pk_columns[0] => $value]);
+        }
+
+        if (!is_array($value)) {
+            throw new OrmException(sprintf('%s.%s: array expected', $this->TableMeta->database_name, $this->TableMeta->table_name));
+        }
+
+        return $this->fetchBy($value);
+    }
+
 }

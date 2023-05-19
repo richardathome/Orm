@@ -26,7 +26,22 @@ class MySqlQueryBuilderTest extends TestCase
     /**
      * @return void
      */
-    public function testBuildFetchFirstBy(): void {
-        self::assertEquals('SELECT * FROM `db`.`table` WHERE `db`.`table`.`id` = :id LIMIT 1;', $this->qb->buildFetchFirstBy('db','table',['id'=>1]));
+    public function testBuildFetchFirstBy(): void
+    {
+        self::assertEquals(
+            'SELECT * FROM `db`.`table` WHERE `db`.`table`.`id` < :id LIMIT 1;',
+            $this->qb->buildFetchFirstBy('db', 'table', ['id <' => 1])
+        );
     }
+
+    /**
+     * @return void
+     */
+    public function testWhereRemovedIfEmpty(): void {
+        self::assertEquals(
+            'SELECT * FROM `db`.`table` LIMIT 1;',
+            $this->qb->buildFetchFirstBy('db', 'table')
+        );
+    }
+
 }

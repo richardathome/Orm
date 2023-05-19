@@ -59,13 +59,24 @@ class MySqlDriver extends Driver
                 'table_name' => $table_name
             ]);
 
+            if (empty($rows)) {
+                throw new OrmException(sprintf('table %s not found in %s', $table_name, $this->database_name));
+            }
+
             /**
              * @var array<string,ColumnMeta> $column_metas
              */
             $column_metas = [];
+            $pk_columns = [];
 
             foreach ($rows as $column_meta) {
+
                 $column_name = (string)$column_meta['column_name'];
+
+                if ($column_meta['column_key'] === 'PRI') {
+                    $pk_columns[] = $column_name;
+                }
+
                 $column_type = $column_meta['column_type'];
                 $data_type = $column_meta['data_type'];
                 $is_signed = !str_contains($column_meta['column_type'], ' unsigned') || $data_type === 'bit';
@@ -93,12 +104,14 @@ class MySqlDriver extends Driver
                     $max_value,
                     $options
                 );
+
             }
 
             $this->table_metas[$this->database_name][$table_name] = new TableMeta(
                 $database_name,
                 $table_name,
-                $column_metas
+                $column_metas,
+                $pk_columns
             );
 
         }

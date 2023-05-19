@@ -15,11 +15,13 @@ class TableMeta
      * @param string $database_name
      * @param string $table_name
      * @param array<string,ColumnMeta> $ColumnMeta
+     * @param array<string> $pk_columns
      */
     public function __construct(
         public readonly string $database_name,
         public readonly string $table_name,
-        public readonly array  $ColumnMeta
+        public readonly array  $ColumnMeta,
+        public array $pk_columns
     )
     {
     }
@@ -49,6 +51,17 @@ class TableMeta
     {
         foreach($column_names as $column_name) {
             $this->guardHasColumn($column_name);
+        }
+    }
+
+    /**
+     * @return void
+     * @throws OrmException
+     */
+    public function guardHasPrimaryKey(): void
+    {
+        if (empty($this->pk_columns)) {
+            throw new OrmException(sprintf('%s.%s has no primary key', $this->database_name, $this->table_name));
         }
     }
 }
