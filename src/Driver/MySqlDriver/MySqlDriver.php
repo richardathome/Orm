@@ -30,11 +30,13 @@ class MySqlDriver extends Driver
      *
      * @throws OrmException
      */
-    public function __construct(PDO $pdo)
+    public function __construct(
+        PDO $pdo
+)
     {
         parent::__construct($pdo, new MySqlQueryBuilder());
 
-        $database_name = (string)$this->fetchSqlValue('SELECT DATABASE();');
+        $database_name = (string)$this->fetchSqlColumn($this->QueryBuilder->buildFetchDatabaseName());
 
         if (empty($database_name)) {
             throw new OrmException('no database selected');

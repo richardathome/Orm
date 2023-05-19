@@ -17,7 +17,16 @@ abstract class QueryBuilder
      *
      * @return string
      */
-    abstract public function buildFetchFirstBy(string $database_name, string $table_name, array $conditions): string;
+    public function buildFetchFirstBy(string $database_name, string $table_name, array $conditions= []): string
+    {
+        $sql = sprintf('SELECT * FROM `%s`.`%s`', $database_name, $table_name);
+
+        $sql .= $this->buildWhere($database_name, $table_name, $conditions);
+
+        $sql .= ' LIMIT 1';
+
+        return $sql . ';';
+    }
 
     /**
      * @param string $database_name
@@ -44,5 +53,15 @@ abstract class QueryBuilder
 
         return $sql;
     }
+
+    /**
+     * @return string
+     */
+    abstract public function buildFetchDatabaseName(): string;
+
+    /**
+     * @return string
+     */
+    abstract public function buildFetchTableMeta(): string;
 
 }

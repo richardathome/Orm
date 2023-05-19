@@ -54,21 +54,10 @@ SQL;
 
 
     /**
-     * @param string $database_name
-     * @param string $table_name
-     *
-     * @param array<string,mixed> $conditions
-     *
-     * @return string
+     * @inheritDoc
      */
-    public function buildFetchFirstBy(string $database_name, string $table_name, array $conditions): string
+    public function buildFetchDatabaseName(): string
     {
-        $sql = sprintf('SELECT * FROM `%s`.`%s`',$database_name,$table_name);
-        $sql .= $this->buildWhere($database_name,$table_name,$conditions);
-        $sql .= ' LIMIT 1';
-
-        return $sql .';';
-
+        return 'SELECT DATABASE();';
     }
-
 }

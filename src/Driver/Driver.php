@@ -16,12 +16,14 @@ abstract class Driver
 {
     /**
      * @param PDO $pdo
+     * @param QueryBuilder $QueryBuilder
      */
     public function __construct(
-        public readonly PDO $pdo,
+        public readonly PDO          $pdo,
         public readonly QueryBuilder $QueryBuilder
     )
     {
+
     }
 
     /**
@@ -40,13 +42,13 @@ abstract class Driver
      *
      * @return array<string,mixed>|false
      */
-    public function fetchFirstBY(string $database_name, string $table_name, array $conditions): array|false
+    public function fetchFirstBy(string $database_name, string $table_name, array $conditions): array|false
     {
-        $sql = $this->QueryBuilder->buildFetchFirstBy($database_name,$table_name,$conditions);
+        $sql = $this->QueryBuilder->buildFetchFirstBy($database_name, $table_name, $conditions);
 
         $stmt = $this->prepareAndExec($sql, $conditions);
 
-        return $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
 
     }
 
@@ -70,7 +72,7 @@ abstract class Driver
      *
      * @return mixed
      */
-    protected function fetchSqlValue(string $sql, array $parameters = []): mixed
+    protected function fetchSqlColumn(string $sql, array $parameters = []): mixed
     {
         $stmt = $this->prepareAndExec($sql, $parameters);
 

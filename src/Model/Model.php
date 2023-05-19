@@ -108,7 +108,7 @@ class Model
     {
         $this->TableMeta->guardHasColumns(array_keys($conditions));
 
-        $values = $this->Driver->fetchFirstBY($this->TableMeta->database_name, $this->TableMeta->table_name, $conditions);
+        $values = $this->Driver->fetchFirstBy($this->TableMeta->database_name, $this->TableMeta->table_name, $conditions);
 
         if ($values === false) {
             throw new OrmException(sprintf('%s.%s not found', $this->TableMeta->database_name, $this->TableMeta->table_name));
