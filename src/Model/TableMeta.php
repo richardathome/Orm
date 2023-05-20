@@ -74,9 +74,9 @@ class TableMeta
      * @return void
      * @throws OrmException
      */
-    public function guardIsChild(string $child_table_name): void
+    public function guardHasChild(string $child_table_name): void
     {
-        if (!isset($this->FkMeta[$child_table_name])) {
+        if (!isset($this->ChildrenMeta[$child_table_name])) {
             throw new OrmException(sprintf('%s is not a child of %s.%s', $child_table_name, $this->database_name,$this->table_name));
         }
     }

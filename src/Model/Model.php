@@ -175,9 +175,9 @@ class Model
      */
     public function fetchChildren(string $child_table_name): Query
     {
-        $this->TableMeta->guardIsChild($child_table_name);
+        $this->TableMeta->guardHasChild($child_table_name);
 
-        $child_column_name = $this->TableMeta->FkMeta[$child_table_name]->column_name;
+        $child_column_name = $this->TableMeta->ChildrenMeta[$child_table_name]->referenced_column_name;
 
         $conditions = [
             $child_column_name => $this->getPk()

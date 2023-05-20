@@ -44,4 +44,13 @@ class MySqlQueryBuilderTest extends TestCase
         );
     }
 
+    /**
+     * @return void
+     */
+    public function testPagination(): void {
+        self::assertEquals(
+            'SELECT * FROM `db`.`table` LIMIT 10 OFFSET 10;',
+            $this->qb->buildFetchAll('db', 'table',[],['per_page'=>10, 'page'=>2])
+        );
+    }
 }

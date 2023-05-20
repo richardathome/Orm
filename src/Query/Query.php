@@ -12,6 +12,7 @@ use Richbuilds\Orm\Driver\Driver;
 use Richbuilds\Orm\Model\Model;
 use Richbuilds\Orm\Model\TableMeta;
 use Richbuilds\Orm\OrmException;
+use RuntimeException;
 
 /**
  * Represents an iterable collection on models
@@ -137,8 +138,6 @@ class Query implements Iterator, Countable
      * Count the number of elements in the Query.
      *
      * @return int
-     *
-     * @throws OrmException
      */
     public function count(): int
     {
@@ -161,7 +160,7 @@ class Query implements Iterator, Countable
     }
 
     /**
-     * @throws OrmException
+     * @return PDOStatement
      */
     private function guardNullStatement(): PDOStatement
     {
@@ -169,7 +168,7 @@ class Query implements Iterator, Countable
             $this->reset();
 
             if ($this->statement === null) {
-                throw new OrmException('how?');
+                throw new RuntimeException('how?');
             }
         }
 

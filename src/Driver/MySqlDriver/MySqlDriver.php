@@ -22,6 +22,8 @@ class MySqlDriver extends Driver
     private string $database_name;
 
     /**
+     * In request storage of any table metadata fetched
+     *
      * @var array<string,array<string,TableMeta>> $table_meta_cache
      */
     private mixed $table_meta_cache = [];
@@ -53,7 +55,7 @@ class MySqlDriver extends Driver
     {
         $database_name = $this->database_name;
 
-        if (!isset($this->table_meta[$database_name][$table_name])) {
+        if (!isset($this->table_meta_cache[$database_name][$table_name])) {
             $sql = $this->QueryBuilder->buildFetchTableMeta();
             $rows = $this->fetchSqlAll($sql, [
                 'database_name' => $database_name,
@@ -79,9 +81,8 @@ class MySqlDriver extends Driver
              */
             $parents = [];
 
-
             /**
-             * @var array<string,FkMeta> $children
+             * @var array<string,FkMeta> $parents
              */
             $children = [];
 
@@ -89,37 +90,41 @@ class MySqlDriver extends Driver
 
                 $column_name = (string)$column_meta['column_name'];
 
-                if ($column_meta['column_key'] === 'PRI') {
-                    $pk_columns[] = $column_name;
+                if (!isset($column_metas[$column_name])) {
+
+                    if ($column_meta['column_key'] === 'PRI') {
+                        $pk_columns[] = $column_name;
+                    }
+
+                    $column_type = $column_meta['column_type'];
+                    $data_type = $column_meta['data_type'];
+                    $is_signed = !str_contains($column_meta['column_type'], ' unsigned') || $data_type === 'bit';
+                    $precision = $column_meta['precision'] ?? 0;
+                    $scale = $column_meta['scale'] ?? 0;
+                    $max_character_length = $column_meta['max_character_length'] ?? 0;
+
+                    $min_value = $this->getMinValue($data_type, $is_signed, $precision, $scale, $max_character_length);
+                    $max_value = $this->getMaxValue($data_type, $is_signed, $precision, $scale, $max_character_length);
+
+                    $options = $this->getOptions($column_type);
+
+                    $column_metas[$column_name] = new ColumnMeta(
+                        $database_name,
+                        $table_name,
+                        $column_name,
+                        $data_type,
+                        $column_type,
+                        $is_signed,
+                        $column_meta['allow_null'] === 'YES',
+                        $max_character_length,
+                        $precision,
+                        $scale,
+                        $min_value,
+                        $max_value,
+                        $options
+                    );
+
                 }
-
-                $column_type = $column_meta['column_type'];
-                $data_type = $column_meta['data_type'];
-                $is_signed = !str_contains($column_meta['column_type'], ' unsigned') || $data_type === 'bit';
-                $precision = $column_meta['precision'] ?? 0;
-                $scale = $column_meta['scale'] ?? 0;
-                $max_character_length = $column_meta['max_character_length'] ?? 0;
-
-                $min_value = $this->getMinValue($data_type, $is_signed, $precision, $scale, $max_character_length);
-                $max_value = $this->getMaxValue($data_type, $is_signed, $precision, $scale, $max_character_length);
-
-                $options = $this->getOptions($column_type);
-
-                $column_metas[$column_name] = new ColumnMeta(
-                    $database_name,
-                    $table_name,
-                    $column_name,
-                    $data_type,
-                    $column_type,
-                    $is_signed,
-                    $column_meta['allow_null'] === 'YES',
-                    $max_character_length,
-                    $precision,
-                    $scale,
-                    $min_value,
-                    $max_value,
-                    $options
-                );
 
                 if ($column_meta['referenced_database'] !== null) {
                     $parents[$column_name] = new FkMeta(
@@ -129,9 +134,18 @@ class MySqlDriver extends Driver
                     );
                 }
 
+                if ($column_meta['referring_database'] !== null) {
+                    $key = (string)$column_meta['referring_table'];
+                    $children[$key] = new FkMeta(
+                        $column_meta['referring_database'],
+                        $column_meta['referring_table'],
+                        $column_meta['referring_column']
+                    );
+                }
+
             }
 
-            $this->table_meta_cache[$this->database_name][$table_name] = new TableMeta(
+            $this->table_meta_cache[$database_name][$table_name] = new TableMeta(
                 $database_name,
                 $table_name,
                 $column_metas,
@@ -272,4 +286,5 @@ class MySqlDriver extends Driver
 
         return $options;
     }
+
 }

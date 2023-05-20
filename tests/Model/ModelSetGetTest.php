@@ -6,6 +6,7 @@ namespace Richbuilds\Orm\Tests\Model;
 use DateTime;
 use Richbuilds\Orm\Model\Date;
 use Richbuilds\Orm\OrmException;
+use stdClass;
 
 /**
  *
@@ -26,7 +27,7 @@ class ModelSetGetTest extends OrmTestBase
      */
     public function testGetSetSingleColumn(string $column_name, mixed $value, mixed $expected_value, string $expected_error): void {
 
-        $model = $this->Orm->Model('datatypes');
+        $model = self::$Orm->Model('datatypes');
 
         if (!empty($expected_error)) {
             self::expectExceptionMessage($expected_error);
@@ -101,7 +102,8 @@ class ModelSetGetTest extends OrmTestBase
             ['date', $maxDate, $maxDate, ''],
             ['date', $date, $date, ''],
 
-            ['datetime', 1, null, 'Failed to parse time string'],
+            ['datetime', 1, null, 'could not convert to DateTime'],
+            ['datetime', new stdClass(), null, 'expected datetime, got stdClass'],
             ['datetime', new DateTime('0999-01-01'), null, 'out of range for date'],
             ['datetime', $minDateTime, $minDateTime, ''],
             ['datetime', $maxDateTime, $maxDateTime, ''],
@@ -224,7 +226,7 @@ class ModelSetGetTest extends OrmTestBase
      * @throws OrmException
      */
     public function testSetManyRollsBackOnError(): void {
-        $user = $this->Orm->Model('users');
+        $user = self::$Orm->Model('users');
         $user->set('name','foo');
 
         self::expectExceptionMessage('expected varchar(45), got DateTime');
@@ -242,7 +244,7 @@ class ModelSetGetTest extends OrmTestBase
      * @throws OrmException
      */
     public function testSetManyWorks(): void {
-        $user = $this->Orm->Model('users');
+        $user = self::$Orm->Model('users');
         $user->set(['id'=>1,'name'=>'foo']);
 
         self::assertEquals(['id'=>1,'name'=>'foo'], $user->get(['id','name']));
@@ -254,7 +256,7 @@ class ModelSetGetTest extends OrmTestBase
      * @throws OrmException
      */
     public function testGetWithNoParamsReturnsAllFields(): void {
-        $user = $this->Orm->Model('users');
+        $user = self::$Orm->Model('users');
 
         self::assertEquals(['id'=>null,'name'=>null,'password'=>null], $user->get());
     }

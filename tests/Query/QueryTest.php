@@ -19,11 +19,16 @@ class QueryTest extends OrmTestBase
      */
     public function testIteratorWorks(): void
     {
-        $posts = $this->Orm->Query('posts', [
+        $posts = self::$Orm->Query('posts', [
             'id <=' => 2
         ]);
 
         self::assertCount(2, $posts);
+
+        foreach($posts as $key=>$post) {
+            self::assertIsInt($key);
+            self::assertNotEmpty($post->get('title'));
+        }
 
     }
 
@@ -33,11 +38,11 @@ class QueryTest extends OrmTestBase
      */
     public function testInClauseWorks(): void
     {
-        $posts = $this->Orm->Query('posts', [
+        $posts = self::$Orm->Query('posts', [
             'id IN' => [1,2]
         ]);
 
-        self::assertCount(2, $posts);
+        self::assertEquals(2, $posts->count());
 
     }
 

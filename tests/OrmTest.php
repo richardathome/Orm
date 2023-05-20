@@ -20,6 +20,6 @@ class OrmTest extends OrmTestBase
     {
         self::expectExceptionMessage('table invalid-table not found in orm_test');
 
-        $this->Orm->Model('invalid-table');
+        self::$Orm->Model('invalid-table');
     }
 }

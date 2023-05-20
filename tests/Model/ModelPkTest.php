@@ -17,7 +17,7 @@ class ModelPkTest extends OrmTestBase
      */
     public function testGetPkWorksForSimplePk(): void
     {
-        $model = $this->Orm->Model('users');
+        $model = self::$Orm->Model('users');
 
         self::assertEquals(null, $model->getPk());
     }
@@ -29,7 +29,7 @@ class ModelPkTest extends OrmTestBase
      */
     public function testGetPkWorksForCompositePk(): void
     {
-        $model = $this->Orm->Model('composite_pk');
+        $model = self::$Orm->Model('composite_pk');
 
         self::assertEquals(['f1' => null, 'f2' => null], $model->getPk());
     }
@@ -42,7 +42,7 @@ class ModelPkTest extends OrmTestBase
 
         self::expectExceptionMessage('orm_test.no_pk has no primary key');
 
-        $this->Orm->Model('no_pk')->fetchByPk(1);
+        self::$Orm->Model('no_pk')->fetchByPk(1);
     }
 
 }

@@ -45,7 +45,7 @@ abstract class Driver
      */
     public function fetchQueryIteratorStmt(string $database_name, string $table_name, array $conditions = [], array $pagination = []): PDOStatement
     {
-        $sql = $this->QueryBuilder->buildFetchAll($database_name, $table_name, $conditions);
+        $sql = $this->QueryBuilder->buildFetchAll($database_name, $table_name, $conditions, $pagination);
 
         return $this->prepareAndExec($sql, $conditions);
     }

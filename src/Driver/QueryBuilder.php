@@ -41,7 +41,7 @@ abstract class QueryBuilder
             return '';
         }
 
-        $sql = ' WHERE ';
+        $where = ' WHERE ';
 
         foreach ($conditions as $column_name => $value) {
             $comparator = '=';
@@ -56,15 +56,15 @@ abstract class QueryBuilder
                     $placeholder = ':' . $column_name . '_value_' . $index;
                     $placeholders[] = $placeholder;
                 }
-                $sql .= sprintf('`%s`.`%s`.`%s` IN (%s) AND ', $database_name, $table_name, $column_name, implode(', ', $placeholders));
+                $where .= sprintf('`%s`.`%s`.`%s` IN (%s) AND ', $database_name, $table_name, $column_name, implode(', ', $placeholders));
             } else {
-                $sql .= sprintf('`%s`.`%s`.`%s` %s :%s AND ', $database_name, $table_name, $column_name, $comparator, $column_name);
+                $where .= sprintf('`%s`.`%s`.`%s` %s :%s AND ', $database_name, $table_name, $column_name, $comparator, $column_name);
             }
         }
 
-        $sql = substr($sql, 0, -5);
+        $where = substr($where, 0, -5);
 
-        return $sql;
+        return $where;
     }
 
     /**
@@ -82,17 +82,47 @@ abstract class QueryBuilder
      * @param string $table_name
      *
      * @param array<string,mixed> $conditions
+     * @param array<string,mixed> $pagination
      *
      * @return string
      */
-    public function buildFetchAll(string $database_name, string $table_name, array $conditions): string
+    public function buildFetchAll(string $database_name, string $table_name, array $conditions = [], array $pagination = []): string
     {
         $sql = sprintf('SELECT * FROM `%s`.`%s`', $database_name, $table_name);
 
         $sql .= $this->buildWhere($database_name, $table_name, $conditions);
 
-        return $sql . ';';
+        $sql .= $this->buildPagination($pagination);
 
+        return $sql . ';';
     }
+
+    /**
+     * @param array{
+     *     page?: int,
+     *     per_page?: int
+     * } $pagination
+     *
+     * @return string
+     */
+    private function buildPagination(array $pagination = []): string
+    {
+        if (!isset($pagination['per_page'])) {
+            return '';
+        }
+
+        $page = (int)($pagination['page'] ?? 1);
+
+        $offset = ($page - 1) * $pagination['per_page'];
+
+        $result = sprintf(' LIMIT %s OFFSET %s', $pagination['per_page'], $offset);
+
+        return $result;
+    }
+
+    /**
+     * @return string
+     */
+    abstract public function buildFetchChildrenMeta(): string;
 
 }

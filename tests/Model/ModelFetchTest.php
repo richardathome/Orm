@@ -18,7 +18,7 @@ class ModelFetchTest extends OrmTestBase
     public function testFetchByWorks(): void
     {
 
-        $user = $this->Orm->Model('users')
+        $user = self::$Orm->Model('users')
             ->fetchBy(['id' => 1]);
 
         self::assertEquals(1, $user->get('id'));
@@ -34,7 +34,7 @@ class ModelFetchTest extends OrmTestBase
 
         self::expectExceptionMessage('unknown column invalid-column in orm_test.users');
 
-        $this->Orm->Model('users')
+        self::$Orm->Model('users')
             ->fetchBy(['invalid-column' => 1]);
 
     }
@@ -48,7 +48,7 @@ class ModelFetchTest extends OrmTestBase
     {
         self::expectExceptionMessage('orm_test.users not found');
 
-        $this->Orm->Model('users')
+        self::$Orm->Model('users')
             ->fetchBy(['id' => 0]);
     }
 
@@ -58,7 +58,7 @@ class ModelFetchTest extends OrmTestBase
      */
     public function testFetchByPkWorksForSimplePk(): void
     {
-        $user = $this->Orm->Model('users')
+        $user = self::$Orm->Model('users')
             ->fetchByPk(1);
 
         self::assertEquals(1, $user->getPk());
@@ -74,7 +74,7 @@ class ModelFetchTest extends OrmTestBase
 
         self::expectExceptionMessage('orm_test.users: scalar expected');
 
-        $this->Orm->Model('users')
+        self::$Orm->Model('users')
             ->fetchByPk(['id' => 1]);
 
     }
@@ -85,11 +85,10 @@ class ModelFetchTest extends OrmTestBase
      */
     public function testFetchByPkWorksForCompositePk(): void
     {
-        $user = $this->Orm->Model('composite_pk')
+        $user = self::$Orm->Model('composite_pk')
             ->fetchByPk(['f1' => 1, 'f2' => 1]);
 
         self::assertEquals(['f1' => 1, 'f2' => 1], $user->getPk());
-
     }
 
 
@@ -100,13 +99,10 @@ class ModelFetchTest extends OrmTestBase
      */
     public function testFetchByPkFailsForCompositePkWithScalar(): void
     {
-
         self::expectExceptionMessage('orm_test.composite_pk: array expected');
 
-        $this->Orm->Model('composite_pk')
+        self::$Orm->Model('composite_pk')
             ->fetchByPk(1);
-
-
     }
 
     /**
@@ -115,9 +111,26 @@ class ModelFetchTest extends OrmTestBase
      */
     public function testFetchParentWorks(): void
     {
-        $post = $this->Orm->Model('posts')->fetchByPk(1);
+        $post = self::$Orm->Model('posts')->fetchByPk(1);
         $user = $post->fetchParent('author_id');
 
-        self::assertEquals(1, $post->get('id'));
+        self::assertEquals(1, $user->get('id'));
+    }
+
+
+    /**
+     * @return void
+     */
+    public function testFetchChildrenWorks(): void
+    {
+        self::markTestIncomplete('This test is not implemented yet.');
+
+        /*
+        $user = $this->Orm->Model('users')->fetchByPk(1);
+
+        $posts = $user->fetchChildren('posts');
+
+        self::assertCount(2, $posts);
+        */
     }
 }

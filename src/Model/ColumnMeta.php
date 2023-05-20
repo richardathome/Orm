@@ -7,6 +7,7 @@ namespace Richbuilds\Orm\Model;
 use DateTime;
 use Richbuilds\Orm\OrmException;
 use RuntimeException;
+use Throwable;
 
 /**
  * Holds meta information about a database column
@@ -189,7 +190,12 @@ class ColumnMeta
         $type = $this->data_type;
 
         if (is_scalar($value)) {
-            $value = new DateTime((string)$value);
+            try {
+                $value = new DateTime((string)$value);
+            }
+            catch (Throwable ) {
+                throw new OrmException('could not convert to DateTime');
+            }
         }
 
         if (!$value instanceof DateTime) {
