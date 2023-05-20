@@ -105,6 +105,20 @@ class ModelFetchTest extends OrmTestBase
             ->fetchByPk(1);
     }
 
+
+    /**
+     * @return void
+     * @throws OrmException
+     */
+    public function testFetchParentFailsForInvalidParent(): void
+    {
+        $post = self::$Orm->Model('posts')->fetchByPk(1);
+
+        self::expectExceptionMessage('orm_test.posts.title is not a foreign key column');
+
+        $post->fetchParent('title');
+    }
+
     /**
      * @return void
      * @throws OrmException
@@ -130,5 +144,19 @@ class ModelFetchTest extends OrmTestBase
         $posts = $user->fetchChildren('posts');
 
         self::assertCount(2, $posts);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws OrmException
+     */
+    public function testFetchChildrenFailsForInvalidChildTableName(): void
+    {
+        $user = self::$Orm->Model('users')->fetchByPk(1);
+
+        self::expectExceptionMessage('invalid-child-table is not a child of orm_test.users');
+
+        $user->fetchChildren('invalid-child-table');
     }
 }

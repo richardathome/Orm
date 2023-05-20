@@ -36,13 +36,27 @@ class QueryTest extends OrmTestBase
      * @return void
      * @throws OrmException
      */
-    public function testInClauseWorks(): void
+    public function testInClauseWorksWithArray(): void
     {
         $posts = self::$Orm->Query('posts', [
             'id IN' => [1,2]
         ]);
 
         self::assertEquals(2, $posts->count());
+
+    }
+
+    /**
+     * @return void
+     * @throws OrmException
+     */
+    public function testInClauseWorksWithScalar(): void
+    {
+        $posts = self::$Orm->Query('posts', [
+            'id IN' => 1
+        ]);
+
+        self::assertEquals(1, $posts->count());
 
     }
 

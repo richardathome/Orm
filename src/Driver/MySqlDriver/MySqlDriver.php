@@ -35,17 +35,22 @@ class MySqlDriver extends Driver
      */
     public function __construct(
         PDO $pdo
-)
+    )
     {
+        $driver_name = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+
+        if ($driver_name !== 'mysql') {
+            throw new OrmException(sprintf('expected mysql pdo, got %s', $driver_name));
+        }
+
         parent::__construct($pdo, new MySqlQueryBuilder());
 
-        $database_name = (string)$this->fetchSqlColumn($this->QueryBuilder->buildFetchDatabaseName());
+        $this->database_name = (string)$this->fetchSqlColumn($this->QueryBuilder->buildFetchDatabaseName());
 
-        if (empty($database_name)) {
+        if (empty($this->database_name)) {
             throw new OrmException('no database selected');
         }
 
-        $this->database_name = $database_name;
     }
 
     /**
@@ -199,7 +204,9 @@ class MySqlDriver extends Driver
         ];
 
         if (!isset($min_values[$data_type])) {
+            // @codeCoverageIgnoreStart
             throw new RuntimeException(sprintf('MySqlDriver::getMinValue(): unhandled type signed %s', $data_type));
+            // @codeCoverageIgnoreEnd
         }
 
         return $min_values[$data_type];
@@ -254,7 +261,9 @@ class MySqlDriver extends Driver
 
         // Check if the provided signed and data type combination is supported
         if (!isset($max_values[$is_signed][$data_type])) {
+            // @codeCoverageIgnoreStart
             throw new RuntimeException(sprintf('MySqlDriver::getMinValue(): unhandled data type: %s %s', $is_signed ? 'signed' : 'unsigned', $data_type));
+            // @codeCoverageIgnoreEnd
         }
 
         // Return the maximum value based on the signed and data type combination

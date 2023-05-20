@@ -168,7 +168,9 @@ class Query implements Iterator, Countable
             $this->reset();
 
             if ($this->statement === null) {
+                // @codeCoverageIgnoreStart
                 throw new RuntimeException('how?');
+                // @codeCoverageIgnoreEnd
             }
         }
 

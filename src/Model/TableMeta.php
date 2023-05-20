@@ -89,7 +89,7 @@ class TableMeta
     public function guardHasParent(string $column_name): void
     {
         if (!isset($this->ParentMeta[$column_name])) {
-            throw new OrmException(sprintf('%s.%s.%s is not a foreign key',$this->database_name,$this->table_name, $column_name));
+            throw new OrmException(sprintf('%s.%s.%s is not a foreign key column',$this->database_name,$this->table_name, $column_name));
         }
     }
 }

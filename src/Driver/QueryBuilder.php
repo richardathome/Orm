@@ -52,6 +52,11 @@ abstract class QueryBuilder
 
             if (strtoupper($comparator) === 'IN') {
                 $placeholders = [];
+
+                if (!is_array($value)) {
+                    $value = [$value];
+                }
+
                 foreach ($value as $index => $item) {
                     $placeholder = ':' . $column_name . '_value_' . $index;
                     $placeholders[] = $placeholder;
