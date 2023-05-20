@@ -1,14 +1,14 @@
 <?php
 declare(strict_types=1);
 
-namespace Richbuilds\Orm\Tests\Model;
+namespace Richbuilds\Orm\Tests\Model\MySql;
 
 use Richbuilds\Orm\OrmException;
 
 /**
  *
  */
-class ModelPkTest extends OrmTestBase
+class ModelPkTest extends MySqlTestBase
 {
 
     /**

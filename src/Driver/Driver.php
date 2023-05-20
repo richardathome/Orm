@@ -23,10 +23,12 @@ abstract class Driver
         public readonly QueryBuilder $QueryBuilder
     )
     {
-
     }
 
+
     /**
+     * Returns the TableMeta for $table_name
+     *
      * @param string $table_name
      *
      * @return TableMeta
@@ -35,7 +37,28 @@ abstract class Driver
      */
     abstract public function fetchTableMeta(string $table_name): TableMeta;
 
+
     /**
+     * @param PDO $pdo
+     * @param string $expected_driver_name
+     *
+     * @return void
+     *
+     * @throws OrmException
+     */
+    protected function guardValidDriver(PDO $pdo, string $expected_driver_name): void
+    {
+        $driver_name = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+
+        if ($driver_name !== $expected_driver_name) {
+            throw new OrmException(sprintf('expected %s pdo, got %s', $expected_driver_name, $driver_name));
+        }
+
+    }
+
+    /**
+     * Returns a PDO statement used by Query to lazy load a result set
+     *
      * @param string $database_name
      * @param string $table_name
      * @param array<string,mixed> $conditions
@@ -50,7 +73,11 @@ abstract class Driver
         return $this->prepareAndExec($sql, $conditions);
     }
 
+
     /**
+     * Returns the first row in $database_name.$table_name that matches
+     * $conditions or false if no matching row is found
+     *
      * @param string $database_name
      * @param string $table_name
      * @param array<string,mixed> $conditions
@@ -64,10 +91,12 @@ abstract class Driver
         $stmt = $this->prepareAndExec($sql, $conditions);
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
-
     }
 
+
     /**
+     * Prepares $sql and executes it with $parameters
+     *
      * @param string $sql
      * @param array<string,mixed> $parameters
      *
@@ -88,9 +117,7 @@ abstract class Driver
 
             if ($comparator === 'IN') {
 
-                if (!is_array($value)) {
-                    $value = [$value];
-                }
+                $value = is_array($value) ? $value : [$value];
 
                 foreach ($value as $k => $v) {
                     $stmt->bindValue(':' . $name . '_value_' . $k, $v);
@@ -107,7 +134,10 @@ abstract class Driver
         return $stmt;
     }
 
+
     /**
+     * Fetches a single value
+     *
      * @param string $sql
      * @param array<string,mixed> $parameters
      *
@@ -121,6 +151,8 @@ abstract class Driver
     }
 
     /**
+     * Fetches all the rows as an array
+     *
      * @param string $sql
      * @param array<string,mixed> $parameters
      *

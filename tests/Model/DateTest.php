@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace Richbuilds\Orm\Tests\Model;
 
 use Exception;
-use Richbuilds\Orm\Model\Date;
 use PHPUnit\Framework\TestCase;
+use Richbuilds\Orm\Model\Date;
 
 /**
  *

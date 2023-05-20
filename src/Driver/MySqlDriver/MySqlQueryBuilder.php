@@ -23,6 +23,7 @@ class MySqlQueryBuilder extends QueryBuilder
 
     /**
      * Returns the query to fetch the metadata for all the columns in $database_name.$table_name
+     * along with associated foreign key metadata
      *
      * @return string
      */
@@ -67,22 +68,4 @@ ORDER BY COLUMNS.ORDINAL_POSITION;
 SQL;
     }
 
-
-    /**
-     * @inheritDoc
-     */
-    public function buildFetchChildrenMeta(): string
-    {
-        return <<<SQL
-SELECT
-    CONSTRAINT_NAME,
-    TABLE_NAME,
-    COLUMN_NAME
-FROM
-    INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-WHERE
-    TABLE_SCHEMA = :database_name
-    AND REFERENCED_TABLE_NAME = :table_name
-SQL;
-    }
 }

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Richbuilds\Orm\Tests\Model;
+namespace Richbuilds\Orm\Tests\Model\MySql;
 
 use DateTime;
 use Richbuilds\Orm\Model\Date;
@@ -11,7 +11,7 @@ use stdClass;
 /**
  *
  */
-class ModelSetGetTest extends OrmTestBase
+class ModelSetGetTest extends MySqlTestBase
 {
     /**
      * @dataProvider providerForGetSetSingleColumn

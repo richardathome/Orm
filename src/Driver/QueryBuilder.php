@@ -5,10 +5,21 @@ declare(strict_types=1);
 namespace Richbuilds\Orm\Driver;
 
 /**
- *
+ * builds sql92 compliant queries
  */
 abstract class QueryBuilder
 {
+
+    /**
+     * @return string
+     */
+    abstract public function buildFetchDatabaseName(): string;
+
+    /**
+     * @return string
+     */
+    abstract public function buildFetchTableMeta(): string;
+
 
     /**
      * @param string $database_name
@@ -52,10 +63,7 @@ abstract class QueryBuilder
 
             if (strtoupper($comparator) === 'IN') {
                 $placeholders = [];
-
-                if (!is_array($value)) {
-                    $value = [$value];
-                }
+                $value = is_array($value) ? $value : [$value];
 
                 foreach ($value as $index => $item) {
                     $placeholder = ':' . $column_name . '_value_' . $index;
@@ -72,15 +80,6 @@ abstract class QueryBuilder
         return $where;
     }
 
-    /**
-     * @return string
-     */
-    abstract public function buildFetchDatabaseName(): string;
-
-    /**
-     * @return string
-     */
-    abstract public function buildFetchTableMeta(): string;
 
     /**
      * @param string $database_name
@@ -110,7 +109,7 @@ abstract class QueryBuilder
      *
      * @return string
      */
-    private function buildPagination(array $pagination = []): string
+    protected function buildPagination(array $pagination = []): string
     {
         if (!isset($pagination['per_page'])) {
             return '';
@@ -124,10 +123,4 @@ abstract class QueryBuilder
 
         return $result;
     }
-
-    /**
-     * @return string
-     */
-    abstract public function buildFetchChildrenMeta(): string;
-
 }

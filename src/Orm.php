@@ -7,6 +7,7 @@ namespace Richbuilds\Orm;
 use PDO;
 use Richbuilds\Orm\Driver\Driver;
 use Richbuilds\Orm\Driver\MySqlDriver\MySqlDriver;
+use Richbuilds\Orm\Driver\SqliteDriver\SqliteDriver;
 use Richbuilds\Orm\Model\Model;
 use Richbuilds\Orm\Query\Query;
 
@@ -31,6 +32,7 @@ class Orm
 
         $this->Driver = match ($driver_name) {
             'mysql' => new MySqlDriver($pdo),
+            'sqlite' => new SqliteDriver($pdo),
             default => throw new OrmException(sprintf('unhandled driver %s', $driver_name)),
         };
     }

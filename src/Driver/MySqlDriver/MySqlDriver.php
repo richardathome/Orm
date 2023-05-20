@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
 
-
 namespace Richbuilds\Orm\Driver\MySqlDriver;
 
 use DateTime;
@@ -28,6 +27,7 @@ class MySqlDriver extends Driver
      */
     private mixed $table_meta_cache = [];
 
+
     /**
      * @param PDO $pdo
      *
@@ -37,11 +37,7 @@ class MySqlDriver extends Driver
         PDO $pdo
     )
     {
-        $driver_name = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
-
-        if ($driver_name !== 'mysql') {
-            throw new OrmException(sprintf('expected mysql pdo, got %s', $driver_name));
-        }
+        $this->guardValidDriver($pdo,'mysql');
 
         parent::__construct($pdo, new MySqlQueryBuilder());
 
@@ -165,7 +161,7 @@ class MySqlDriver extends Driver
     }
 
     /**
-     * Returns the minimum value this column can contain
+     * Returns the smallest value this column can contain
      *
      * @param mixed $data_type
      * @param bool $is_signed
@@ -295,5 +291,6 @@ class MySqlDriver extends Driver
 
         return $options;
     }
+
 
 }

@@ -4,12 +4,12 @@ declare(strict_types=1);
 namespace Richbuilds\Orm\Tests\Query;
 
 use Richbuilds\Orm\OrmException;
-use Richbuilds\Orm\Tests\Model\OrmTestBase;
+use Richbuilds\Orm\Tests\Model\MySql\MySqlTestBase;
 
 /**
  *
  */
-class QueryTest extends OrmTestBase
+class QueryTest extends MySqlTestBase
 {
 
     /**
