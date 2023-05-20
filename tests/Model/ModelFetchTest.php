@@ -120,17 +120,15 @@ class ModelFetchTest extends OrmTestBase
 
     /**
      * @return void
+     *
+     * @throws OrmException
      */
     public function testFetchChildrenWorks(): void
     {
-        self::markTestIncomplete('This test is not implemented yet.');
-
-        /*
-        $user = $this->Orm->Model('users')->fetchByPk(1);
+        $user = self::$Orm->Model('users')->fetchByPk(1);
 
         $posts = $user->fetchChildren('posts');
 
         self::assertCount(2, $posts);
-        */
     }
 }
