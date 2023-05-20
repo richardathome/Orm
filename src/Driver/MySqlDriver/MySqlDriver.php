@@ -9,6 +9,7 @@ use PDO;
 use Richbuilds\Orm\Driver\Driver;
 use Richbuilds\Orm\Model\ColumnMeta;
 use Richbuilds\Orm\Model\Date;
+use Richbuilds\Orm\Model\FkMeta;
 use Richbuilds\Orm\Model\TableMeta;
 use Richbuilds\Orm\OrmException;
 use RuntimeException;
@@ -21,9 +22,9 @@ class MySqlDriver extends Driver
     private string $database_name;
 
     /**
-     * @var array<string,array<string,TableMeta>> $table_metas
+     * @var array<string,array<string,TableMeta>> $table_meta_cache
      */
-    private mixed $table_metas = [];
+    private mixed $table_meta_cache = [];
 
     /**
      * @param PDO $pdo
@@ -67,7 +68,22 @@ class MySqlDriver extends Driver
              * @var array<string,ColumnMeta> $column_metas
              */
             $column_metas = [];
+
+            /**
+             * @var array<string> $pk_columns
+             */
             $pk_columns = [];
+
+            /**
+             * @var array<string,FkMeta> $parents
+             */
+            $parents = [];
+
+
+            /**
+             * @var array<string,FkMeta> $children
+             */
+            $children = [];
 
             foreach ($rows as $column_meta) {
 
@@ -105,18 +121,28 @@ class MySqlDriver extends Driver
                     $options
                 );
 
+                if ($column_meta['referenced_database'] !== null) {
+                    $parents[$column_name] = new FkMeta(
+                        $column_meta['referenced_database'],
+                        $column_meta['referenced_table'],
+                        $column_meta['referenced_column']
+                    );
+                }
+
             }
 
-            $this->table_metas[$this->database_name][$table_name] = new TableMeta(
+            $this->table_meta_cache[$this->database_name][$table_name] = new TableMeta(
                 $database_name,
                 $table_name,
                 $column_metas,
-                $pk_columns
+                $pk_columns,
+                $parents,
+                $children
             );
 
         }
 
-        return $this->table_metas[$database_name][$table_name];
+        return $this->table_meta_cache[$database_name][$table_name];
     }
 
     /**

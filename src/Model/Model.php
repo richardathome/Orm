@@ -6,6 +6,7 @@ namespace Richbuilds\Orm\Model;
 
 use Richbuilds\Orm\Driver\Driver;
 use Richbuilds\Orm\OrmException;
+use Richbuilds\Orm\Query\Query;
 
 /**
  * Represents a row in a database
@@ -163,6 +164,47 @@ class Model
         }
 
         return $this->fetchBy($value);
+    }
+
+    /**
+     * @param string $child_table_name
+     *
+     * @return Query
+     *
+     * @throws OrmException
+     */
+    public function fetchChildren(string $child_table_name): Query
+    {
+        $this->TableMeta->guardIsChild($child_table_name);
+
+        $child_column_name = $this->TableMeta->FkMeta[$child_table_name]->column_name;
+
+        $conditions = [
+            $child_column_name => $this->getPk()
+        ];
+
+        $query = new Query($this->Driver, $child_table_name, $conditions);
+
+        return $query;
+    }
+
+    /**
+     * @param string $column_name
+     *
+     * @return Model
+     *
+     * @throws OrmException
+     */
+    public function fetchParent(string $column_name): Model
+    {
+        $this->TableMeta->guardHasParent($column_name);
+
+        $parent_meta = $this->TableMeta->ParentMeta[$column_name];
+
+        $child = (new Model($this->Driver, $parent_meta->referenced_table_name))
+            ->fetchByPk($this->get($column_name));
+
+        return $child;
     }
 
 }

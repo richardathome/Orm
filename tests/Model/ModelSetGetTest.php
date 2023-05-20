@@ -50,7 +50,8 @@ class ModelSetGetTest extends ModelTestBase
 
         $minDateTime = new DateTime('1000-01-01 00:00:00');
         $maxDateTime = new DateTime('9999-12-31 23:59:59');
-        $datetime = new DateTime();
+        $datetime = new DateTime('1968-05-17 05:35:41');
+        $datetime_string = $datetime->format('Y-m-d H:i:s');
 
         $time = DateTime::createFromFormat('H:i:s', (new DateTime())->format('H:i:s'));
 
@@ -100,11 +101,12 @@ class ModelSetGetTest extends ModelTestBase
             ['date', $maxDate, $maxDate, ''],
             ['date', $date, $date, ''],
 
-            ['datetime', 1, null, 'expected datetime, got int'],
+            ['datetime', 1, null, 'Failed to parse time string'],
             ['datetime', new DateTime('0999-01-01'), null, 'out of range for date'],
             ['datetime', $minDateTime, $minDateTime, ''],
             ['datetime', $maxDateTime, $maxDateTime, ''],
             ['datetime', $datetime, $datetime, ''],
+            ['datetime', $datetime_string, $datetime, ''],
 
             ['decimal_unsigned', $datetime, null, 'expected unsigned decimal(3,2), got DateTime'],
             ['decimal_unsigned', 'foo', null, 'out of range for unsigned decimal(3,2)'],

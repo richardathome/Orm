@@ -16,12 +16,16 @@ class TableMeta
      * @param string $table_name
      * @param array<string,ColumnMeta> $ColumnMeta
      * @param array<string> $pk_columns
+     * @param array<string,FkMeta> $ParentMeta
+     * @param array<string,FkMeta> $ChildrenMeta
      */
     public function __construct(
         public readonly string $database_name,
         public readonly string $table_name,
         public readonly array  $ColumnMeta,
-        public array $pk_columns
+        public array $pk_columns,
+        public array $ParentMeta,
+        public array $ChildrenMeta
     )
     {
     }
@@ -62,6 +66,30 @@ class TableMeta
     {
         if (empty($this->pk_columns)) {
             throw new OrmException(sprintf('%s.%s has no primary key', $this->database_name, $this->table_name));
+        }
+    }
+
+    /**
+     * @param string $child_table_name
+     * @return void
+     * @throws OrmException
+     */
+    public function guardIsChild(string $child_table_name): void
+    {
+        if (!isset($this->FkMeta[$child_table_name])) {
+            throw new OrmException(sprintf('%s is not a child of %s.%s', $child_table_name, $this->database_name,$this->table_name));
+        }
+    }
+
+    /**
+     * @param string $column_name
+     * @return void
+     * @throws OrmException
+     */
+    public function guardHasParent(string $column_name): void
+    {
+        if (!isset($this->ParentMeta[$column_name])) {
+            throw new OrmException(sprintf('%s.%s.%s is not a foreign key',$this->database_name,$this->table_name, $column_name));
         }
     }
 }

@@ -188,6 +188,10 @@ class ColumnMeta
     {
         $type = $this->data_type;
 
+        if (is_scalar($value)) {
+            $value = new DateTime((string)$value);
+        }
+
         if (!$value instanceof DateTime) {
             throw new OrmException(sprintf('expected %s, got %s', $type, get_debug_type($value)));
         }

@@ -69,12 +69,13 @@ class ModelFetchTest extends ModelTestBase
      *
      * @throws OrmException
      */
-    public function testFetchByPkFailsForSimplePkWithArray(): void {
+    public function testFetchByPkFailsForSimplePkWithArray(): void
+    {
 
         self::expectExceptionMessage('orm_test.users: scalar expected');
 
         $this->Orm->Model('users')
-            ->fetchByPk(['id'=>1]);
+            ->fetchByPk(['id' => 1]);
 
     }
 
@@ -97,7 +98,8 @@ class ModelFetchTest extends ModelTestBase
      *
      * @throws OrmException
      */
-    public function testFetchByPkFailsForCompositePkWithScalar(): void {
+    public function testFetchByPkFailsForCompositePkWithScalar(): void
+    {
 
         self::expectExceptionMessage('orm_test.composite_pk: array expected');
 
@@ -105,5 +107,17 @@ class ModelFetchTest extends ModelTestBase
             ->fetchByPk(1);
 
 
+    }
+
+    /**
+     * @return void
+     * @throws OrmException
+     */
+    public function testFetchParentWorks(): void
+    {
+        $post = $this->Orm->Model('posts')->fetchByPk(1);
+        $user = $post->fetchParent('author_id');
+
+        self::assertEquals(1, $post->get('id'));
     }
 }
