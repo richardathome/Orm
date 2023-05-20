@@ -8,7 +8,7 @@ use Richbuilds\Orm\OrmException;
 /**
  *
  */
-class ModelFetchTest extends ModelTestBase
+class ModelFetchTest extends OrmTestBase
 {
     /**
      * @return void

@@ -10,7 +10,7 @@ use Richbuilds\Orm\OrmException;
 /**
  *
  */
-class ModelSetGetTest extends ModelTestBase
+class ModelSetGetTest extends OrmTestBase
 {
     /**
      * @dataProvider providerForGetSetSingleColumn

@@ -4,12 +4,12 @@ declare(strict_types=1);
 namespace Richbuilds\Orm\Tests;
 
 use Richbuilds\Orm\OrmException;
-use Richbuilds\Orm\Tests\Model\ModelTestBase;
+use Richbuilds\Orm\Tests\Model\OrmTestBase;
 
 /**
  *
  */
-class OrmTest extends ModelTestBase
+class OrmTest extends OrmTestBase
 {
     /**
      * @return void

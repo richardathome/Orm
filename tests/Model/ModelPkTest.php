@@ -8,7 +8,7 @@ use Richbuilds\Orm\OrmException;
 /**
  *
  */
-class ModelPkTest extends ModelTestBase
+class ModelPkTest extends OrmTestBase
 {
 
     /**

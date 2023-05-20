@@ -149,8 +149,6 @@ class Query implements Iterator, Countable
 
     /**
      * @return void
-     *
-     * @throws OrmException
      */
     private function reset(): void
     {

@@ -50,7 +50,16 @@ abstract class QueryBuilder
                 [$column_name, $comparator] = explode(' ', $column_name);
             }
 
-            $sql .= sprintf('`%s`.`%s`.`%s` %s :%s AND ', $database_name, $table_name, $column_name, $comparator, $column_name);
+            if (strtoupper($comparator) === 'IN') {
+                $placeholders = [];
+                foreach ($value as $index => $item) {
+                    $placeholder = ':' . $column_name . '_value_' . $index;
+                    $placeholders[] = $placeholder;
+                }
+                $sql .= sprintf('`%s`.`%s`.`%s` IN (%s) AND ', $database_name, $table_name, $column_name, implode(', ', $placeholders));
+            } else {
+                $sql .= sprintf('`%s`.`%s`.`%s` %s :%s AND ', $database_name, $table_name, $column_name, $comparator, $column_name);
+            }
         }
 
         $sql = substr($sql, 0, -5);
@@ -67,5 +76,23 @@ abstract class QueryBuilder
      * @return string
      */
     abstract public function buildFetchTableMeta(): string;
+
+    /**
+     * @param string $database_name
+     * @param string $table_name
+     *
+     * @param array<string,mixed> $conditions
+     *
+     * @return string
+     */
+    public function buildFetchAll(string $database_name, string $table_name, array $conditions): string
+    {
+        $sql = sprintf('SELECT * FROM `%s`.`%s`', $database_name, $table_name);
+
+        $sql .= $this->buildWhere($database_name, $table_name, $conditions);
+
+        return $sql . ';';
+
+    }
 
 }

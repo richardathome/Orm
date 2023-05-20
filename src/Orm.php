@@ -8,6 +8,7 @@ use PDO;
 use Richbuilds\Orm\Driver\Driver;
 use Richbuilds\Orm\Driver\MySqlDriver\MySqlDriver;
 use Richbuilds\Orm\Model\Model;
+use Richbuilds\Orm\Query\Query;
 
 /**
  * Main application entry point
@@ -44,5 +45,19 @@ class Orm
     public function Model(string $table_name): Model
     {
         return new Model($this->Driver, $table_name);
+    }
+
+    /**
+     * @param string $table_name
+     * @param array<string,mixed> $conditions
+     * @param array<string,mixed> $pagination
+     *
+     * @return Query
+     *
+     * @throws OrmException
+     */
+    public function Query(string $table_name, array $conditions = [], array $pagination = []): Query
+    {
+        return new Query($this->Driver, $table_name, $conditions, $pagination);
     }
 }

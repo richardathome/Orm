@@ -39,6 +39,21 @@ abstract class Driver
      * @param string $database_name
      * @param string $table_name
      * @param array<string,mixed> $conditions
+     * @param array<string,mixed> $pagination
+     *
+     * @return PDOStatement
+     */
+    public function fetchQueryIteratorStmt(string $database_name, string $table_name, array $conditions = [], array $pagination = []): PDOStatement
+    {
+        $sql = $this->QueryBuilder->buildFetchAll($database_name, $table_name, $conditions);
+
+        return $this->prepareAndExec($sql, $conditions);
+    }
+
+    /**
+     * @param string $database_name
+     * @param string $table_name
+     * @param array<string,mixed> $conditions
      *
      * @return array<string,mixed>|false
      */
@@ -61,7 +76,33 @@ abstract class Driver
     protected function prepareAndExec(string $sql, array $parameters = []): PDOStatement
     {
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($parameters);
+
+        // bind the params
+        foreach ($parameters as $name => $value) {
+
+            $comparator = '=';
+
+            if (str_contains($name, ' ')) {
+                [$name, $comparator] = explode(' ', $name);
+            }
+
+            if ($comparator === 'IN') {
+
+                if (!is_array($value)) {
+                    $value = [$value];
+                }
+
+                foreach ($value as $k => $v) {
+                    $stmt->bindValue(':' . $name . '_value_' . $k, $v);
+                }
+
+            } else {
+                $stmt->bindValue(':' . $name, $value);
+            }
+
+        }
+
+        $stmt->execute();
 
         return $stmt;
     }

@@ -11,7 +11,7 @@ use Richbuilds\Orm\OrmException;
 /**
  *
  */
-class ModelTestBase extends TestCase
+class OrmTestBase extends TestCase
 {
     protected Orm $Orm;
 
