@@ -28,6 +28,8 @@ class Orm
         public readonly PDO $pdo
     )
     {
+        $pdo->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
+        $pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
         $driver_name = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
 
         $this->Driver = match ($driver_name) {

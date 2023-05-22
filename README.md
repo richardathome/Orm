@@ -1,10 +1,12 @@
 [![RichBuilds Components](/src/richbuilds_logo.png)](https://richbuilds.com)
-[![ORM](/src/orm_logo.png)]
+![ORM](/src/orm_logo.png)
 
 # ORM
-A Wireless ORM for PHP 8
+A Wireless, typesafe ORM for PHP 8.1. 
 
-Quickstart
+Currently only MySql data sources are supported, but Sqlite and Postgres are planned.
+
+## Quickstart
 ```php
 $orm = new Orm(new PDO('dsn','username','password'));
 ```
@@ -33,7 +35,8 @@ $post->set('title', 'My Post Title');
 ```php
 $post->set([
     'title'='My Post Title',
-    'body'=>'My post body.'
+    'body'=>'My post body.',
+    'created'=>new Datetime()
 ]);
 ```
 
@@ -44,7 +47,7 @@ $post->set([
 $post->set('author_id', 1); 
 ```
 
-## Set a foreign key column to a Model
+## Set a foreign key column to a new Model
 - fails if Model is not of correct type
 
 ```php
@@ -52,7 +55,14 @@ $user = $orm->Model('user');
 $post->set('author_id', $user);
 ```
 
-# Set the children
+## Set a foreign key column to a an array of parent values
+
+```php
+$user = ['name'=>'foo','password'=>'password'];
+$post->set('author_id', $user);
+```
+
+# Set the children of a model
 - accepts arrays of fields
 - accepts array of models
 
@@ -89,12 +99,11 @@ $posts = $user->fetchChildrent('posts');
 
 # Query
 
-## Create a queru
+## Create a query
 
 ```php
 $posts = $orm->Query('posts', 
     [
-        'YEAR(created) ='=>2023,
         'author_id'=>1
     ],
     [
@@ -102,7 +111,10 @@ $posts = $orm->Query('posts',
     ]
 )
 
+// SELECT * FROM database.posts WHERE database.posts.author_id = :1 LIMIT 10 OFFSET 0;
+
 foreach($posts as $post) {
-echo $post->get('title');
+  echo $post->get('title');
+  $comments = $post->fetchChildren('comments');
 }
 ```

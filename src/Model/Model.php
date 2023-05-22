@@ -38,6 +38,8 @@ class Model
 
 
     /**
+     * Returns the value of a column
+     *
      * @param string|array<string> $column_name
      *
      * @return mixed|null
@@ -50,6 +52,8 @@ class Model
     }
 
     /**
+     * Fetches a new Model based on $conditions
+     *
      * @param array<string,mixed> $conditions
      *
      * @return Model
@@ -73,6 +77,8 @@ class Model
     }
 
     /**
+     * Returns the primary key column name(s)
+     *
      * @return int|string|array<string,mixed>|null
      *
      * @throws OrmException
@@ -91,6 +97,8 @@ class Model
     }
 
     /**
+     * Fetches a new Model by it's primary key
+     *
      * @param int|string|array<string,mixed> $value
      *
      * @return Model
@@ -118,6 +126,8 @@ class Model
     }
 
     /**
+     * Lazily fetches Child Models for this Model
+     *
      * @param string $child_table_name
      * @param array<string,mixed> $conditions
      * @return Query
@@ -138,29 +148,33 @@ class Model
     }
 
     /**
-     * @param string $column_name
+     * Fetches the parent model pointed to by $column_name
+     *
+     * @param string $fk_column_name
      *
      * @return Model
      *
      * @throws OrmException
      */
-    public function fetchParent(string $column_name): Model
+    public function fetchParent(string $fk_column_name): Model
     {
-        $this->TableMeta->guardHasParent($column_name);
+        $this->TableMeta->guardHasParent($fk_column_name);
 
-        $parent_meta = $this->TableMeta->ParentMeta[$column_name];
+        $parent_meta = $this->TableMeta->ParentMeta[$fk_column_name];
 
-        if ($this->Values->get($column_name) === null) {
-            throw new OrmException(sprintf('%s.%s.%s is null', $this->TableMeta->database_name,$this->TableMeta->table_name,$column_name));
+        if ($this->Values->get($fk_column_name) === null) {
+            throw new OrmException(sprintf('%s.%s.%s is null', $this->TableMeta->database_name,$this->TableMeta->table_name,$fk_column_name));
         }
 
         $child = (new Model($this->Driver, $parent_meta->referenced_table_name))
-            ->fetchByPk($this->Values->get($column_name));
+            ->fetchByPk($this->Values->get($fk_column_name));
 
         return $child;
     }
 
     /**
+     * Save the Model, it's parents and it's children, wrapped in a transaction
+     *
      * @return self
      *
      * @throws OrmException
@@ -289,6 +303,8 @@ class Model
 
 
     /**
+     * Sets $column_name to $value
+     *
      * @param string|array<string,mixed> $column_name
      * @param mixed|null $value
      *
