@@ -104,8 +104,8 @@ class MySqlDriver extends Driver
                     $scale = $column_meta['scale'] ?? 0;
                     $max_character_length = $column_meta['max_character_length'] ?? 0;
 
-                    $min_value = $this->getMinValue($data_type, $is_signed, $precision, $scale, $max_character_length);
-                    $max_value = $this->getMaxValue($data_type, $is_signed, $precision, $scale, $max_character_length);
+                    $min_value = $this->getMinValue($data_type, $is_signed, $max_character_length);
+                    $max_value = $this->getMaxValue($data_type, $is_signed, $precision, $max_character_length);
 
                     $options = $this->getOptions($column_type);
 
@@ -165,13 +165,11 @@ class MySqlDriver extends Driver
      *
      * @param mixed $data_type
      * @param bool $is_signed
-     * @param int $precision
-     * @param int $scale
      * @param int $max_character_length
      *
      * @return mixed
      */
-    private function getMinValue(mixed $data_type, bool $is_signed, int $precision, int $scale, int $max_character_length): mixed
+    private function getMinValue(mixed $data_type, bool $is_signed,int $max_character_length): mixed
     {
 
         // Check if the data type is a range type
@@ -215,12 +213,11 @@ class MySqlDriver extends Driver
      * @param string $data_type
      * @param bool $is_signed
      * @param int $precision
-     * @param int $scale
      * @param int $max_character_length
      *
      * @return mixed
      */
-    private function getMaxValue(string $data_type, bool $is_signed, int $precision, int $scale, int $max_character_length): mixed
+    private function getMaxValue(string $data_type, bool $is_signed, int $precision, int $max_character_length): mixed
     {
         // Check if the data type is a range type
         if ($max_character_length !== 0 || in_array($data_type, ['decimal', 'json'])) {

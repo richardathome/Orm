@@ -355,6 +355,10 @@ class ModelSetGetTest extends MySqlTestBase
     }
 
 
+    /**
+     * @return void
+     * @throws OrmException
+     */
     public function testSetParentFailsForInvalidParentModel(): void
     {
 
@@ -368,6 +372,10 @@ class ModelSetGetTest extends MySqlTestBase
     }
 
 
+    /**
+     * @return void
+     * @throws OrmException
+     */
     public function testSetChildrenFailsUnlessArray(): void
     {
 

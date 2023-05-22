@@ -110,6 +110,10 @@ class ModelSaveTest extends MySqlTestBase
     }
 
 
+    /**
+     * @return void
+     * @throws OrmException
+     */
     public function testSaveChildrenWorks(): void
     {
 
