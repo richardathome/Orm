@@ -123,4 +123,49 @@ abstract class QueryBuilder
 
         return $result;
     }
+
+    /**
+     * @param string $database_name
+     * @param string $table_name
+     * @param array<string,mixed> $values
+     * @param array<string,mixed> $conditions
+     *
+     * @return string
+     */
+    public function buildInsert(string $database_name, string $table_name, array $values, array $conditions): string
+    {
+        /** @noinspection Annotator */
+        $sql = sprintf('INSERT INTO `%s`.`%s` (`', $database_name, $table_name)
+            . join('`, `', array_keys($values))
+            . '`) VALUES ('
+            . ':' . join(', :', array_keys($values))
+            . ')'
+            . $this->buildWhere($database_name,$table_name, $conditions);
+
+        return $sql . ';';
+    }
+
+    /**
+     * @param string $database_name
+     * @param string $table_name
+     * @param array<string,mixed> $values
+     * @param array<string,mixed> $conditions
+     *
+     * @return string
+     */
+    public function buildUpdate(string $database_name, string $table_name, array $values, array $conditions): string
+    {
+        /** @noinspection Annotator */
+        $sql = sprintf('UPDATE `%s`.`%s` SET ', $database_name, $table_name);
+
+        foreach ($values as $column_name => $value) {
+            $sql .= '`' . $column_name . '` = :' . $column_name . ',';
+        }
+
+        $sql = substr($sql, 0, -1);
+
+        $sql .= $this->buildWhere($database_name,$table_name, $conditions);
+
+        return $sql . ';';
+    }
 }

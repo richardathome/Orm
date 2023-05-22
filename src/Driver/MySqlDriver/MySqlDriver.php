@@ -292,5 +292,31 @@ class MySqlDriver extends Driver
         return $options;
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function insert(string $database_name, string $table_name, array $values = [], array $conditions = []): bool|string
+    {
+        $sql = $this->QueryBuilder->buildInsert($database_name, $table_name, $values, $conditions);
+
+        $this->prepareAndExec($sql, $values);
+
+        return $this->pdo->lastInsertId();
+
+
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function update(string $database_name, string $table_name, array $values = [], array $conditions = []): int
+    {
+        $sql = $this->QueryBuilder->buildUpdate($database_name, $table_name, $values, $conditions);
+
+        $stmt = $this->prepareAndExec($sql, $values);
+
+        return $stmt->rowCount();
+    }
+
 
 }

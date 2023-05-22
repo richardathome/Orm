@@ -6,7 +6,6 @@ namespace Richbuilds\Orm\Driver\SqliteDriver;
 
 use PDO;
 use Richbuilds\Orm\Driver\Driver;
-use Richbuilds\Orm\Model\ColumnMeta;
 use Richbuilds\Orm\Model\TableMeta;
 use Richbuilds\Orm\OrmException;
 
@@ -58,5 +57,25 @@ class SqliteDriver extends Driver
         }
 
         return $this->table_meta_cache[$table_name];
+    }
+
+
+    /**
+     * @inheritDoc
+     */
+    public function insert(string $database_name, string $table_name, array $values = [], array $conditions = []): bool|string
+    {
+        // TODO: Implement insert() method.
+        return false;
+
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function update(string $database_name, string $table_name, array $values = [], array $conditions = []): int
+    {
+        // TODO: Implement update() method.
+        return 0;
     }
 }

@@ -37,6 +37,25 @@ abstract class Driver
      */
     abstract public function fetchTableMeta(string $table_name): TableMeta;
 
+    /**
+     * @param string $database_name
+     * @param string $table_name
+     * @param array<string,mixed> $values
+     * @param array<string,mixed> $conditions
+     *
+     * @return bool|string
+     */
+    abstract public function insert(string $database_name, string $table_name, array $values = [], array $conditions = []): bool|string;
+
+    /**
+     * @param string $database_name
+     * @param string $table_name
+     * @param array<string,mixed> $values
+     * @param array<string,mixed> $conditions
+     *
+     * @return int
+     */
+    abstract public function update(string $database_name, string $table_name, array $values = [], array $conditions = []): int;
 
     /**
      * @param PDO $pdo
@@ -163,6 +182,50 @@ abstract class Driver
         $stmt = $this->prepareAndExec($sql, $parameters);
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws OrmException
+     */
+    public function beginTransaction(): void
+    {
+        if ($this->pdo->inTransaction()) {
+            throw new OrmException('already in transaction');
+        }
+
+        $this->pdo->beginTransaction();
+    }
+
+
+    /**
+     * @return void
+     *
+     * @throws OrmException
+     */
+    public function commitTransaction(): void
+    {
+        if (!$this->pdo->inTransaction()) {
+            throw new OrmException('not in transaction');
+        }
+
+        $this->pdo->commit();
+    }
+
+
+    /**
+     * @return void
+     *
+     * @throws OrmException
+     */
+    public function rollbackTransaction(): void
+    {
+        if (!$this->pdo->inTransaction()) {
+            throw new OrmException('not in transaction');
+        }
+
+        $this->pdo->rollBack();
     }
 
 }

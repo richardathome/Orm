@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace Richbuilds\Orm\Tests\Driver\SqliteDriver;
 
 use PDO;
-use Richbuilds\Orm\Driver\MySqlDriver\MySqlDriver;
 use PHPUnit\Framework\TestCase;
 use Richbuilds\Orm\Driver\SqliteDriver\SqliteDriver;
 use Richbuilds\Orm\Driver\SqliteDriver\SqliteQueryBuilder;

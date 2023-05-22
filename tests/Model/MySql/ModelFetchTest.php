@@ -46,7 +46,7 @@ class ModelFetchTest extends MySqlTestBase
      */
     public function testFetchByFailsIfNotFound(): void
     {
-        self::expectExceptionMessage('orm_test.users not found');
+        self::expectExceptionMessage('orm_test.users record not found');
 
         self::$Orm->Model('users')
             ->fetchBy(['id' => 0]);

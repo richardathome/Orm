@@ -5,6 +5,7 @@ namespace Richbuilds\Orm\Tests\Model\MySql;
 
 use DateTime;
 use Richbuilds\Orm\Model\Date;
+use Richbuilds\Orm\Model\Model;
 use Richbuilds\Orm\OrmException;
 use stdClass;
 
@@ -13,6 +14,7 @@ use stdClass;
  */
 class ModelSetGetTest extends MySqlTestBase
 {
+
     /**
      * @dataProvider providerForGetSetSingleColumn
      *
@@ -25,7 +27,8 @@ class ModelSetGetTest extends MySqlTestBase
      *
      * @throws OrmException
      */
-    public function testGetSetSingleColumn(string $column_name, mixed $value, mixed $expected_value, string $expected_error): void {
+    public function testGetSetSingleColumn(string $column_name, mixed $value, mixed $expected_value, string $expected_error): void
+    {
 
         $model = self::$Orm->Model('datatypes');
 
@@ -225,17 +228,18 @@ class ModelSetGetTest extends MySqlTestBase
      * @return void
      * @throws OrmException
      */
-    public function testSetManyRollsBackOnError(): void {
+    public function testSetManyRollsBackOnError(): void
+    {
         $user = self::$Orm->Model('users');
-        $user->set('name','foo');
+        $user->set('name', 'foo');
 
         self::expectExceptionMessage('expected varchar(45), got DateTime');
         $user->set([
-            'id'=>1,
-            'name'=>new DateTime()
+            'id' => 1,
+            'name' => new DateTime()
         ]);
 
-        self::assertEquals(['id'=>null,'name'=>'foo'], $user->get(['id','name']));
+        self::assertEquals(['id' => null, 'name' => 'foo'], $user->get(['id', 'name']));
     }
 
 
@@ -243,11 +247,12 @@ class ModelSetGetTest extends MySqlTestBase
      * @return void
      * @throws OrmException
      */
-    public function testSetManyWorks(): void {
+    public function testSetManyWorks(): void
+    {
         $user = self::$Orm->Model('users');
-        $user->set(['id'=>1,'name'=>'foo']);
+        $user->set(['id' => 1, 'name' => 'foo']);
 
-        self::assertEquals(['id'=>1,'name'=>'foo'], $user->get(['id','name']));
+        self::assertEquals(['id' => 1, 'name' => 'foo'], $user->get(['id', 'name']));
     }
 
 
@@ -255,9 +260,71 @@ class ModelSetGetTest extends MySqlTestBase
      * @return void
      * @throws OrmException
      */
-    public function testGetWithNoParamsReturnsAllFields(): void {
+    public function testGetWithNoParamsReturnsAllFields(): void
+    {
         $user = self::$Orm->Model('users');
 
-        self::assertEquals(['id'=>null,'name'=>null,'password'=>null], $user->get());
+        self::assertEquals(['id' => null, 'name' => null, 'password' => null], $user->get());
     }
+
+    /**
+     * @dataProvider setParentProvider
+     *
+     * @param mixed $value
+     * @param string $expected
+     * @param string $expected_error
+     *
+     * @return void
+     *
+     * @throws OrmException
+     */
+    public function testSetParent(mixed $value, string $expected, string $expected_error): void
+    {
+
+        if (!empty($expected_error)) {
+            self::expectExceptionMessage($expected_error);
+        }
+
+        $post = self::$Orm->Model('posts')
+            ->set([
+                'title' => uniqid('title', true),
+                'author_id' => $value
+            ]);
+
+        if (empty($expected_error)) {
+            self::assertEquals($expected, get_debug_type($post->get('author_id')));
+        }
+    }
+
+    /**
+     * @return array<array{mixed,string,string}>
+     *
+     * @throws OrmException
+     */
+    public static function setParentProvider(): array
+    {
+
+        self::setUpBeforeClass();
+
+        $valid_values = [
+            'name' => uniqid('name', true),
+            'password' => 'password'
+        ];
+
+        $invalid_values = [
+            'name' => new DateTime(),
+            'password' => 'password'
+        ];
+
+        $valid_model = self::$Orm->Model('users')->set($valid_values);
+
+        return [
+            [1, 'int', ''],
+            [0, '', 'orm_test.posts.author_id: orm_test.users record not found'],
+            [$valid_values, Model::class, ''],
+            [$valid_model, Model::class, ''],
+            [$invalid_values,'','orm_test.users.name: expected varchar(45), got DateTime']
+        ];
+    }
+
 }

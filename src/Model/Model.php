@@ -7,6 +7,7 @@ namespace Richbuilds\Orm\Model;
 use Richbuilds\Orm\Driver\Driver;
 use Richbuilds\Orm\OrmException;
 use Richbuilds\Orm\Query\Query;
+use RuntimeException;
 
 /**
  * Represents a row in a database
@@ -16,7 +17,7 @@ class Model
     public readonly TableMeta $TableMeta;
 
     /**
-     * @var array<string,mixed>
+     * @var array<string,mixed> $values
      */
     private array $values = [];
 
@@ -34,40 +35,6 @@ class Model
         $this->TableMeta = $this->Driver->fetchTableMeta($table_name);
     }
 
-
-    /**
-     * @param string|array<string,mixed> $column_name
-     * @param mixed|null $value
-     *
-     * @return $this
-     *
-     * @throws OrmException
-     */
-    public function set(string|array $column_name, mixed $value = null): self
-    {
-        if (is_array($column_name)) {
-            $original_value = $this->values;
-
-            try {
-
-                foreach ($column_name as $k => $v) {
-                    $this->set($k, $v);
-                }
-
-                return $this;
-
-            } catch (OrmException $e) {
-                $this->values = $original_value;
-                throw ($e);
-            }
-        }
-
-        $this->TableMeta->guardHasColumn($column_name);
-
-        $this->values[$column_name] = $this->TableMeta->ColumnMeta[$column_name]->toPhp($value);
-
-        return $this;
-    }
 
     /**
      * @param string|array<string> $column_name
@@ -112,7 +79,7 @@ class Model
         $values = $this->Driver->fetchFirstBy($this->TableMeta->database_name, $this->TableMeta->table_name, $conditions);
 
         if ($values === false) {
-            throw new OrmException(sprintf('%s.%s not found', $this->TableMeta->database_name, $this->TableMeta->table_name));
+            throw new OrmException(sprintf('%s.%s record not found', $this->TableMeta->database_name, $this->TableMeta->table_name));
         }
 
         $model = new Model($this->Driver, $this->TableMeta->table_name);
@@ -206,5 +173,345 @@ class Model
 
         return $child;
     }
+
+    /**
+     * @return self
+     *
+     * @throws OrmException
+     */
+    public function save(): self
+    {
+        $original_values = $this->values;
+        $this->Driver->beginTransaction();
+
+        try {
+            $this->_save();
+
+            $this->Driver->commitTransaction();
+
+            return $this;
+        } catch (OrmException $e) {
+            $this->values = $original_values;
+            $this->Driver->rollbackTransaction();
+
+            throw $e;
+        }
+    }
+
+    /**
+     * @return void
+     *
+     * @throws OrmException
+     */
+    private function _save(): void
+    {
+        $this->saveParents();
+
+        $values = $this->values;
+
+        // remove any children values as they are saved after this record is created
+        foreach (array_keys($this->TableMeta->ChildrenMeta) as $child_table_name) {
+            if (isset($values[$child_table_name])) {
+                unset($values[$child_table_name]);
+            }
+        }
+
+        if ($this->getPk() === null) {
+            $insert_id = $this->Driver->insert(
+                $this->TableMeta->database_name,
+                $this->TableMeta->table_name,
+                $values
+            );
+
+            $this->set($this->TableMeta->pk_columns[0], $insert_id);
+        } else {
+
+            /**
+             * @var array<string,mixed> $conditions
+             */
+            $conditions = [];
+
+            foreach ($this->TableMeta->pk_columns as $column_name) {
+                $conditions[$column_name] = $this->get($column_name);
+            }
+
+            $affected = $this->Driver->update(
+                $this->TableMeta->database_name,
+                $this->TableMeta->table_name,
+                $values,
+                $conditions
+            );
+
+            if ($affected !== 1) {
+                throw new RuntimeException('how?');
+            }
+        }
+
+        $this->saveChildren();
+    }
+
+
+    /**
+     * @return void
+     *
+     * @throws OrmException
+     */
+    private function saveParents(): void
+    {
+        foreach ($this->TableMeta->ParentMeta as $column_name => $parent_meta) {
+
+            if (!isset($this->values[$column_name])) {
+                continue;
+            }
+
+            $value = $this->values[$column_name];
+
+            if (is_array($value) || $value instanceof Model) {
+
+                if ($value instanceof Model) {
+                    $parent_model = $value;
+                } else {
+                    $parent_model = new Model($this->Driver, $parent_meta->referenced_table_name);
+                    $parent_model->set($value);
+                }
+
+                $parent_model->_save();
+
+                //set the fk column in this model to the primary key of the parent model
+                $this->set($column_name, $parent_model->getPk());
+            }
+        }
+    }
+
+    /**
+     * @return void
+     *
+     * @throws OrmException
+     */
+    private function saveChildren(): void
+    {
+        foreach ($this->TableMeta->ChildrenMeta as $child_table_name => $child_meta) {
+
+            if (isset($this->values[$child_table_name])) {
+
+                $children = $this->values[$child_table_name];
+
+                if (!is_array($children)) {
+                    throw new OrmException('array expected');
+                }
+
+                foreach ($children as $child_data) {
+
+                    if ($child_data instanceof Model) {
+                        $child_model = $child_data;
+                    } else {
+                        $child_model = new Model($this->Driver, $child_table_name);
+                        $child_model->set($child_data);
+                    }
+
+                    // TODO: will fail for composite keys
+                    $child_model->set($child_meta->referenced_column_name, $this->getPk());
+                    $child_model->_save();
+                }
+
+                unset($this->values[$child_table_name]);
+            }
+
+        }
+    }
+
+
+    /**
+     * @param string|array<string,mixed> $column_name
+     * @param mixed|null $value
+     *
+     * @return self
+     *
+     * @throws OrmException
+     */
+    public function set(string|array $column_name, mixed $value = null): self
+    {
+        if (is_array($column_name)) {
+            return $this->setMany($column_name);
+        }
+
+        if (isset($this->TableMeta->ChildrenMeta[$column_name])) {
+            return $this->setChildren($column_name, $value);
+        }
+
+        if (isset($this->TableMeta->ParentMeta[$column_name])) {
+
+            if (is_array($value)) {
+                return $this->setParentArray($column_name, $value);
+            }
+
+            if ($value instanceof Model) {
+                return $this->setParentModel($column_name, $value);
+            }
+
+            return $this->setParentValue($column_name, $value);
+
+        }
+
+        // set a simple value
+        $this->TableMeta->guardHasColumn($column_name);
+
+        $this->values[$column_name] = $this->TableMeta->ColumnMeta[$column_name]->toPhp($value);
+
+        return $this;
+
+    }
+
+
+    /**
+     * @param array<string,mixed> $values
+     *
+     * @return self
+     *
+     * @throws OrmException
+     */
+    private function setMany(array $values): self
+    {
+        $original_value = $this->values;
+
+        try {
+
+            foreach ($values as $k => $v) {
+                $this->set($k, $v);
+            }
+
+            return $this;
+
+        } catch (OrmException $e) {
+            $this->values = $original_value;
+            throw ($e);
+        }
+
+    }
+
+    /**
+     * @param string $children_table_name
+     * @param mixed $children
+     * @return self
+     * @throws OrmException
+     */
+    private function setChildren(string $children_table_name, mixed $children): self
+    {
+        if (!is_array($children)) {
+            throw new OrmException('array expected');
+        }
+
+        $this->TableMeta->guardHasChild($children_table_name);
+
+        foreach ($children as $key => $child_values) {
+
+            if ($child_values instanceof Model) {
+                $model = $child_values;
+            } else {
+                $model = new Model($this->Driver, $children_table_name);
+                $model->set($child_values);
+            }
+
+            if ($children_table_name !== $model->TableMeta->table_name) {
+                throw new OrmException(sprintf(
+                    '%s.%s expected %s got %s',
+                    $this->TableMeta->database_name,
+                    $this->TableMeta->table_name,
+                    $children_table_name,
+                    $model->TableMeta->table_name
+                ));
+            }
+
+            $this->values[$children_table_name][(string)$key] = $child_values;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param string $parent_column_name
+     * @param array<string,mixed> $parent_values
+     *
+     * @return self
+     *
+     * @throws OrmException
+     */
+    private function setParentArray(string $parent_column_name, array $parent_values): self
+    {
+        $this->TableMeta->guardHasParent($parent_column_name);
+
+        $parent_fk = $this->TableMeta->ParentMeta[$parent_column_name];
+        $model = new Model($this->Driver, $parent_fk->referenced_table_name);
+        $model->set($parent_values);
+
+        if ($model->getPk() !== null) {
+            $model->fetchByPk($model->getPk());
+        }
+
+        $this->values[$parent_column_name] = $model;
+
+        return $this;
+    }
+
+    /**
+     * @param string $parent_column_name
+     * @param Model $parent_model
+     *
+     * @return self
+     *
+     * @throws OrmException
+     */
+    private function setParentModel(string $parent_column_name, Model $parent_model): self
+    {
+        $this->TableMeta->guardHasParent($parent_column_name);
+
+        if ($this->TableMeta->ParentMeta[$parent_column_name]->referenced_table_name !== $parent_model->TableMeta->table_name) {
+            throw new OrmException(sprintf(
+                '%s.%s.%s: expected %s, got %s',
+                $this->TableMeta->database_name,
+                $this->TableMeta->table_name,
+                $parent_column_name,
+                $this->TableMeta->ParentMeta[$parent_column_name]->referenced_table_name,
+                $parent_model->TableMeta->table_name
+            ));
+        }
+
+        $this->values[$parent_column_name] = $parent_model;
+
+        return $this;
+    }
+
+    /**
+     * @param string $column_name
+     * @param mixed $value
+     *
+     * @return self
+     *
+     * @throws OrmException
+     */
+    private function setParentValue(string $column_name, mixed $value): self
+    {
+        $this->TableMeta->guardHasParent($column_name);
+
+        $value = $this->TableMeta->ColumnMeta[$column_name]->toPhp($value);
+
+        if ($value !== null) {
+            $parent_fk = $this->TableMeta->ParentMeta[$column_name];
+
+            // ensure foreign key is valid by trying to load the foreign key model
+            // TODO: Will fail for composite key
+            try {
+                (new Model($this->Driver, $parent_fk->referenced_table_name))->fetchByPk($value);
+            }
+            catch (OrmException $e) {
+                throw new OrmException(sprintf('%s.%s.%s: %s', $this->TableMeta->database_name,$this->TableMeta->table_name,$column_name,$e->getMessage()));
+            }
+        }
+
+        $this->values[$column_name] = $value;
+
+        return $this;
+    }
+
 
 }
