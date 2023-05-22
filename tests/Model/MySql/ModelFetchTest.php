@@ -137,11 +137,23 @@ class ModelFetchTest extends MySqlTestBase
      *
      * @throws OrmException
      */
+    public function testFetchParentFailsIfFkIsNull(): void {
+        $post = self::$Orm->Model('posts');
+
+        self::expectExceptionMessage('orm_test.posts.author_id is null');
+        $post->fetchParent('author_id');
+    }
+
+    /**
+     * @return void
+     *
+     * @throws OrmException
+     */
     public function testFetchChildrenWorks(): void
     {
         $user = self::$Orm->Model('users')->fetchByPk(1);
 
-        $posts = $user->fetchChildren('posts');
+        $posts = $user->fetchChildren('posts', ['id <=' => 2]);
 
         self::assertCount(2, $posts);
     }

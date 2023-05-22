@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Richbuilds\Orm\Driver;
 
+use RuntimeException;
 use PDO;
 use PDOStatement;
 use Richbuilds\Orm\Model\TableMeta;
@@ -187,12 +188,11 @@ abstract class Driver
     /**
      * @return void
      *
-     * @throws OrmException
      */
     public function beginTransaction(): void
     {
         if ($this->pdo->inTransaction()) {
-            throw new OrmException('already in transaction');
+            throw new RuntimeException('already in transaction');
         }
 
         $this->pdo->beginTransaction();
@@ -202,12 +202,11 @@ abstract class Driver
     /**
      * @return void
      *
-     * @throws OrmException
      */
     public function commitTransaction(): void
     {
         if (!$this->pdo->inTransaction()) {
-            throw new OrmException('not in transaction');
+            throw new RuntimeException('not in transaction');
         }
 
         $this->pdo->commit();
@@ -217,12 +216,11 @@ abstract class Driver
     /**
      * @return void
      *
-     * @throws OrmException
      */
     public function rollbackTransaction(): void
     {
         if (!$this->pdo->inTransaction()) {
-            throw new OrmException('not in transaction');
+            throw new RuntimeException('not in transaction');
         }
 
         $this->pdo->rollBack();

@@ -323,8 +323,58 @@ class ModelSetGetTest extends MySqlTestBase
             [0, '', 'orm_test.posts.author_id: orm_test.users record not found'],
             [$valid_values, Model::class, ''],
             [$valid_model, Model::class, ''],
-            [$invalid_values,'','orm_test.users.name: expected varchar(45), got DateTime']
+            [$invalid_values, '', 'orm_test.users.name: expected varchar(45), got DateTime']
         ];
     }
 
+
+    /**
+     * @return void
+     *
+     * @throws OrmException
+     */
+    public function testSetChildrenWorks(): void
+    {
+
+        $posts = [
+            [
+                'title' => uniqid('title', true)
+            ],
+            [
+                'title' => uniqid('title', true)
+            ]
+        ];
+
+        $author = self::$Orm->Model('users')->set([
+            'name' => uniqid('name', true),
+            'password' => 'password',
+            'posts' => $posts
+        ]);
+
+        self::assertIsArray($author->get('posts'));
+    }
+
+
+    public function testSetParentFailsForInvalidParentModel(): void
+    {
+
+        $comment = self::$Orm->Model('comments');
+
+        self::expectExceptionMessage('orm_test.posts.author_id: expected users, got comments');
+
+        self::$Orm->Model('posts')
+            ->set('author_id', $comment);
+
+    }
+
+
+    public function testSetChildrenFailsUnlessArray(): void
+    {
+
+        self::expectExceptionMessage('orm_test.users.posts expected array got int');
+
+        self::$Orm->Model('users')
+            ->set('posts', 1);
+
+    }
 }

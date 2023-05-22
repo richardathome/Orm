@@ -39,7 +39,8 @@ class TableMeta
      */
     public function guardHasColumn(string $column_name): void
     {
-        if (!array_key_exists($column_name, $this->ColumnMeta)) {
+        $columns =array_merge( array_keys($this->ColumnMeta) , array_keys($this->ChildrenMeta));
+        if (!in_array($column_name, $columns)) {
             throw new OrmException(sprintf('unknown column %s in %s.%s', $column_name, $this->database_name, $this->table_name));
         }
     }

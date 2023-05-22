@@ -17,9 +17,9 @@ class Model
     public readonly TableMeta $TableMeta;
 
     /**
-     * @var Values $values
+     * @var Values $Values
      */
-    private Values $values;
+    private Values $Values;
 
     /**
      * @param Driver $Driver
@@ -33,7 +33,7 @@ class Model
     )
     {
         $this->TableMeta = $this->Driver->fetchTableMeta($table_name);
-        $this->values = new Values($this->Driver, $this->TableMeta);
+        $this->Values = new Values($this->Driver, $this->TableMeta);
     }
 
 
@@ -46,7 +46,7 @@ class Model
      */
     public function get(string|array $column_name = []): mixed
     {
-        return $this->values->get($column_name);
+        return $this->Values->get($column_name);
     }
 
     /**
@@ -84,10 +84,10 @@ class Model
         $pk_column_names = $this->TableMeta->pk_columns;
 
         if (count($pk_column_names) === 1) {
-            return $this->get($pk_column_names[0]);
+            return $this->Values->get($pk_column_names[0]);
         }
 
-        return $this->get($pk_column_names);
+        return $this->Values->get($pk_column_names);
     }
 
     /**
@@ -119,20 +119,18 @@ class Model
 
     /**
      * @param string $child_table_name
-     *
+     * @param array<string,mixed> $conditions
      * @return Query
      *
      * @throws OrmException
      */
-    public function fetchChildren(string $child_table_name): Query
+    public function fetchChildren(string $child_table_name, array $conditions= []): Query
     {
         $this->TableMeta->guardHasChild($child_table_name);
 
         $child_column_name = $this->TableMeta->ChildrenMeta[$child_table_name]->referenced_column_name;
 
-        $conditions = [
-            $child_column_name => $this->getPk()
-        ];
+        $conditions[$child_column_name] = $this->getPk();
 
         $query = new Query($this->Driver, $child_table_name, $conditions);
 
@@ -152,8 +150,12 @@ class Model
 
         $parent_meta = $this->TableMeta->ParentMeta[$column_name];
 
+        if ($this->Values->get($column_name) === null) {
+            throw new OrmException(sprintf('%s.%s.%s is null', $this->TableMeta->database_name,$this->TableMeta->table_name,$column_name));
+        }
+
         $child = (new Model($this->Driver, $parent_meta->referenced_table_name))
-            ->fetchByPk($this->get($column_name));
+            ->fetchByPk($this->Values->get($column_name));
 
         return $child;
     }
@@ -165,7 +167,7 @@ class Model
      */
     public function save(): self
     {
-        $original_values = $this->values;
+        $original_values = $this->Values;
         $this->Driver->beginTransaction();
 
         try {
@@ -175,7 +177,7 @@ class Model
 
             return $this;
         } catch (OrmException $e) {
-            $this->values = $original_values;
+            $this->Values = $original_values;
             $this->Driver->rollbackTransaction();
 
             throw $e;
@@ -191,7 +193,7 @@ class Model
     {
         $this->saveParents();
 
-        $values = $this->values->columnValues();
+        $values = $this->Values->getColumnValues();
 
         if ($this->getPk() === null) {
             $insert_id = $this->Driver->insert(
@@ -200,7 +202,7 @@ class Model
                 $values
             );
 
-            $this->values->set($this->TableMeta->pk_columns[0], $insert_id);
+            $this->Values->set($this->TableMeta->pk_columns[0], $insert_id);
         } else {
 
             /**
@@ -209,7 +211,7 @@ class Model
             $conditions = [];
 
             foreach ($this->TableMeta->pk_columns as $column_name) {
-                $conditions[$column_name] = $this->values->get($column_name);
+                $conditions[$column_name] = $this->Values->get($column_name);
             }
 
             $affected = $this->Driver->update(
@@ -237,28 +239,21 @@ class Model
     {
         foreach ($this->TableMeta->ParentMeta as $column_name => $parent_meta) {
 
-            if (!isset($this->values[$column_name])) {
+            if (!$this->Values->has($column_name)) {
                 continue;
             }
 
-            $value = $this->values->get($column_name);
+            $parent = $this->Values->get($column_name);
 
-            if (is_array($value) || $value instanceof Model) {
-
-                if ($value instanceof Model) {
-                    $parent_model = $value;
-                } else {
-                    $parent_model = new Model($this->Driver, $parent_meta->referenced_table_name);
-                    $parent_model->set($value);
-                }
-
-                $parent_model->_save();
+            if ($parent instanceof Model) {
+                $parent->_save();
 
                 //set the fk column in this model to the primary key of the parent model
-                $this->set($column_name, $parent_model->getPk());
+                $this->Values->set($column_name, $parent->getPk());
             }
         }
     }
+
 
     /**
      * @return void
@@ -269,13 +264,9 @@ class Model
     {
         foreach ($this->TableMeta->ChildrenMeta as $child_table_name => $child_meta) {
 
-            if ($this->values->has($child_table_name)) {
+            if ($this->Values->has($child_table_name)) {
 
-                $children = $this->get($child_table_name);
-
-                if (!is_array($children)) {
-                    throw new OrmException('array expected');
-                }
+                $children = $this->Values->get($child_table_name);
 
                 foreach ($children as $child_data) {
 
@@ -291,9 +282,8 @@ class Model
                     $child_model->_save();
                 }
 
-                unset($this->values[$child_table_name]);
+                $this->Values->remove($child_table_name);
             }
-
         }
     }
 
@@ -308,7 +298,7 @@ class Model
      */
     public function set(string|array $column_name, mixed $value = null): self
     {
-        $this->values->set($column_name, $value);
+        $this->Values->set($column_name, $value);
 
         return $this;
     }

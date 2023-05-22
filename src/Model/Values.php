@@ -8,7 +8,7 @@ use Richbuilds\Orm\Driver\Driver;
 use Richbuilds\Orm\OrmException;
 
 /**
- *
+ * Represents a Model's column values
  */
 class Values
 {
@@ -24,7 +24,7 @@ class Values
      * @param TableMeta $TableMeta
      */
     public function __construct(
-        private readonly Driver $Driver,
+        private readonly Driver    $Driver,
         private readonly TableMeta $TableMeta
     )
     {
@@ -39,8 +39,8 @@ class Values
      */
     public function get(array|string $column_name): mixed
     {
-
         if (is_array($column_name)) {
+            // get many
 
             if (empty($column_name)) {
                 $column_name = array_keys($this->TableMeta->ColumnMeta);
@@ -55,6 +55,7 @@ class Values
             return $values;
         }
 
+        // get one
         $this->TableMeta->guardHasColumn($column_name);
 
         return $this->values[$column_name] ?? null;
@@ -136,7 +137,13 @@ class Values
     private function setChildren(string $children_table_name, mixed $children): self
     {
         if (!is_array($children)) {
-            throw new OrmException('array expected');
+            throw new OrmException(sprintf(
+                '%s.%s.%s expected array got %s',
+                $this->TableMeta->database_name,
+                $this->TableMeta->table_name,
+                $children_table_name,
+                get_debug_type($children)
+            ));
         }
 
         $this->TableMeta->guardHasChild($children_table_name);
@@ -178,15 +185,13 @@ class Values
     {
         $this->TableMeta->guardHasParent($parent_column_name);
 
-        $parent_fk = $this->TableMeta->ParentMeta[$parent_column_name];
-        $model = new Model($this->Driver, $parent_fk->referenced_table_name);
-        $model->set($parent_values);
+        // test $parent_values valid for the parent
+        $parent_meta = $this->TableMeta->ParentMeta[$parent_column_name];
+        $parent_model = new Model($this->Driver, $parent_meta->referenced_table_name);
+        $parent_model->set($parent_values);
 
-        if ($model->getPk() !== null) {
-            $model->fetchByPk($model->getPk());
-        }
-
-        $this->values[$parent_column_name] = $model;
+        // values are valid
+        $this->values[$parent_column_name] = $parent_model;
 
         return $this;
     }
@@ -240,9 +245,8 @@ class Values
             // TODO: Will fail for composite key
             try {
                 (new Model($this->Driver, $parent_fk->referenced_table_name))->fetchByPk($value);
-            }
-            catch (OrmException $e) {
-                throw new OrmException(sprintf('%s.%s.%s: %s', $this->TableMeta->database_name,$this->TableMeta->table_name,$column_name,$e->getMessage()));
+            } catch (OrmException $e) {
+                throw new OrmException(sprintf('%s.%s.%s: %s', $this->TableMeta->database_name, $this->TableMeta->table_name, $column_name, $e->getMessage()));
             }
         }
 
@@ -254,7 +258,7 @@ class Values
     /**
      * @return array<string,mixed>
      */
-    public function columnValues(): array
+    public function getColumnValues(): array
     {
 
         $values = $this->values;
@@ -277,6 +281,18 @@ class Values
     public function has(string $key): bool
     {
         return isset($this->values[$key]);
+    }
+
+    /**
+     * @param string $key
+     *
+     * @return $this
+     */
+    public function remove(string $key): self
+    {
+        unset($this->values[$key]);
+
+        return $this;
     }
 
 
