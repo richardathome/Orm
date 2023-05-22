@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Richbuilds\Orm\Tests\Model\MySql;
 
-use Richbuilds\Orm\Model\Model;
 use Richbuilds\Orm\OrmException;
 
 /**
