@@ -378,11 +378,24 @@ class ModelSetGetTest extends MySqlTestBase
      */
     public function testSetChildrenFailsUnlessArray(): void
     {
-
-        self::expectExceptionMessage('orm_test.users.posts expected array got int');
+        self::expectExceptionMessage('orm_test.users.posts: expected array got int');
 
         self::$Orm->Model('users')
             ->set('posts', 1);
+    }
 
+
+    /**
+     * @return void
+     *
+     * @throws OrmException
+     */
+    public function testSetChildrenFailsWithWrongTypeChildren(): void
+    {
+        self::expectExceptionMessage('orm_test.posts.comments: expected comments got users');
+
+        self::$Orm->Model('posts')->set('comments', [
+            self::$Orm->Model('users')
+        ]);
     }
 }

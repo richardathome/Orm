@@ -157,4 +157,13 @@ class ModelSaveTest extends MySqlTestBase
         self::assertEquals($pk, $user->getPk());
         self::assertNotEquals($original, $user->get('name'));
     }
+
+    /**
+     * @return void
+     */
+    public function testSaveRollsBackOnError(): void {
+
+        self::markTestIncomplete();
+
+    }
 }

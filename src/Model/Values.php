@@ -138,7 +138,7 @@ class Values
     {
         if (!is_array($children)) {
             throw new OrmException(sprintf(
-                '%s.%s.%s expected array got %s',
+                '%s.%s.%s: expected array got %s',
                 $this->TableMeta->database_name,
                 $this->TableMeta->table_name,
                 $children_table_name,
@@ -159,9 +159,10 @@ class Values
 
             if ($children_table_name !== $model->TableMeta->table_name) {
                 throw new OrmException(sprintf(
-                    '%s.%s expected %s got %s',
+                    '%s.%s.%s: expected %s got %s',
                     $this->TableMeta->database_name,
                     $this->TableMeta->table_name,
+                    $children_table_name,
                     $children_table_name,
                     $model->TableMeta->table_name
                 ));

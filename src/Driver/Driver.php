@@ -188,11 +188,12 @@ abstract class Driver
     /**
      * @return void
      *
+     * @throws OrmException
      */
     public function beginTransaction(): void
     {
         if ($this->pdo->inTransaction()) {
-            throw new RuntimeException('already in transaction');
+            throw new OrmException('already in transaction');
         }
 
         $this->pdo->beginTransaction();
@@ -210,6 +211,8 @@ abstract class Driver
         }
 
         $this->pdo->commit();
+
+        $this->started_in_transaction = false;
     }
 
 
