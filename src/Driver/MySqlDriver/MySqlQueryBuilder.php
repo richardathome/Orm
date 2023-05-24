@@ -22,10 +22,7 @@ class MySqlQueryBuilder extends QueryBuilder
 
 
     /**
-     * Returns the query to fetch the metadata for all the columns in $database_name.$table_name
-     * along with associated foreign key metadata
-     *
-     * @return string
+     * @inheritDoc
      */
     public function buildFetchTableMeta(): string
     {

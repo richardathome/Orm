@@ -7,7 +7,7 @@ namespace Richbuilds\Orm;
 use Exception;
 
 /**
- * Custom exception thrown when the Orm has a problem.
+ * Custom exception thrown when the Orm finds a problem
  */
 class OrmException extends Exception
 {

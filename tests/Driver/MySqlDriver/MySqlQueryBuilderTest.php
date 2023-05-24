@@ -5,6 +5,7 @@ namespace Richbuilds\Orm\Tests\Driver\MySqlDriver;
 
 use Richbuilds\Orm\Driver\MySqlDriver\MySqlQueryBuilder;
 use PHPUnit\Framework\TestCase;
+use Richbuilds\Orm\Model\TableMeta;
 
 /**
  *
@@ -28,9 +29,10 @@ class MySqlQueryBuilderTest extends TestCase
      */
     public function testBuildFetchFirstBy(): void
     {
+        $table_meta = new TableMeta('db','table',[],[],[],[]);
         self::assertEquals(
             'SELECT * FROM `db`.`table` WHERE `db`.`table`.`id` < :id LIMIT 1;',
-            $this->qb->buildFetchFirstBy('db', 'table', ['id <' => 1])
+            $this->qb->buildFetchFirstBy($table_meta, ['id <' => 1])
         );
     }
 
@@ -38,9 +40,10 @@ class MySqlQueryBuilderTest extends TestCase
      * @return void
      */
     public function testWhereRemovedIfEmpty(): void {
+        $table_meta = new TableMeta('db','table',[],[],[],[]);
         self::assertEquals(
             'SELECT * FROM `db`.`table` LIMIT 1;',
-            $this->qb->buildFetchFirstBy('db', 'table')
+            $this->qb->buildFetchFirstBy($table_meta)
         );
     }
 
@@ -48,9 +51,10 @@ class MySqlQueryBuilderTest extends TestCase
      * @return void
      */
     public function testPagination(): void {
+        $table_meta = new TableMeta('db','table',[],[],[],[]);
         self::assertEquals(
             'SELECT * FROM `db`.`table` LIMIT 10 OFFSET 10;',
-            $this->qb->buildFetchAll('db', 'table',[],['per_page'=>10, 'page'=>2])
+            $this->qb->buildFetchAll($table_meta,[],['per_page'=>10, 'page'=>2])
         );
     }
 }

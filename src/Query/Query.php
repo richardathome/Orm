@@ -15,7 +15,7 @@ use Richbuilds\Orm\OrmException;
 use RuntimeException;
 
 /**
- * Represents an iterable collection on models
+ * Represents an iterable collection of Models
  *
  * @implements  Iterator<int|string, mixed>
  */
@@ -151,12 +151,7 @@ class Query implements Iterator, Countable
      */
     private function reset(): void
     {
-        $this->statement = $this->Driver->fetchQueryIteratorStmt(
-            $this->TableMeta->database_name,
-            $this->TableMeta->table_name,
-            $this->conditions,
-            $this->pagination
-        );
+        $this->statement = $this->Driver->fetchQueryIteratorStmt($this->TableMeta, $this->conditions, $this->pagination);
     }
 
     /**
@@ -168,9 +163,7 @@ class Query implements Iterator, Countable
             $this->reset();
 
             if ($this->statement === null) {
-                // @codeCoverageIgnoreStart
-                throw new RuntimeException('how?');
-                // @codeCoverageIgnoreEnd
+                throw new RuntimeException('impossible?');
             }
         }
 

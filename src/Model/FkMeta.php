@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Richbuilds\Orm\Model;
 
 /**
- *
+ * Stores information about the foreign keys in a table
  */
 class FkMeta
 {

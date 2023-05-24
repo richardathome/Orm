@@ -61,23 +61,9 @@ class ModelFetchTest extends MySqlTestBase
         $user = self::$Orm->Model('users')
             ->fetchByPk(1);
 
-        self::assertEquals(1, $user->getPk());
+        self::assertEquals(['id'=>1], $user->getPk());
     }
 
-    /**
-     * @return void
-     *
-     * @throws OrmException
-     */
-    public function testFetchByPkFailsForSimplePkWithArray(): void
-    {
-
-        self::expectExceptionMessage('orm_test.users: scalar expected');
-
-        self::$Orm->Model('users')
-            ->fetchByPk(['id' => 1]);
-
-    }
 
     /**
      * @return void
@@ -106,43 +92,6 @@ class ModelFetchTest extends MySqlTestBase
     }
 
 
-    /**
-     * @return void
-     * @throws OrmException
-     */
-    public function testFetchParentFailsForInvalidParent(): void
-    {
-        $post = self::$Orm->Model('posts')->fetchByPk(1);
-
-        self::expectExceptionMessage('orm_test.posts.title is not a foreign key column');
-
-        $post->fetchParent('title');
-    }
-
-    /**
-     * @return void
-     * @throws OrmException
-     */
-    public function testFetchParentWorks(): void
-    {
-        $post = self::$Orm->Model('posts')->fetchByPk(1);
-        $user = $post->fetchParent('author_id');
-
-        self::assertEquals(1, $user->get('id'));
-    }
-
-
-    /**
-     * @return void
-     *
-     * @throws OrmException
-     */
-    public function testFetchParentFailsIfFkIsNull(): void {
-        $post = self::$Orm->Model('posts');
-
-        self::expectExceptionMessage('orm_test.posts.author_id is null');
-        $post->fetchParent('author_id');
-    }
 
     /**
      * @return void
@@ -158,6 +107,16 @@ class ModelFetchTest extends MySqlTestBase
         self::assertCount(2, $posts);
     }
 
+
+    /**
+     * @return void
+     * 
+     * @throws OrmException
+     */
+    public function testFetchChildrenFailsWithNoPk(): void {
+        self::expectExceptionMessage('primary key not set');
+        self::$Orm->Model('users')->fetchChildren('posts');
+    }
     /**
      * @return void
      *

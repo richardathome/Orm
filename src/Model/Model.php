@@ -8,6 +8,7 @@ use Richbuilds\Orm\Driver\Driver;
 use Richbuilds\Orm\OrmException;
 use Richbuilds\Orm\Query\Query;
 use RuntimeException;
+use Throwable;
 
 /**
  * Represents a row in a database
@@ -28,12 +29,30 @@ class Model
      * @throws OrmException
      */
     public function __construct(
-        public readonly Driver $Driver,
+        private readonly Driver $Driver,
         string                 $table_name
     )
     {
         $this->TableMeta = $this->Driver->fetchTableMeta($table_name);
         $this->Values = new Values($this->Driver, $this->TableMeta);
+    }
+
+
+    /**
+     * Sets $column_name to $value
+     *
+     * @param string|array<string,mixed> $column_name
+     * @param mixed|null $value
+     *
+     * @return self
+     *
+     * @throws OrmException
+     */
+    public function set(string|array $column_name, mixed $value = null): self
+    {
+        $this->Values->set($column_name, $value);
+
+        return $this;
     }
 
 
@@ -51,6 +70,7 @@ class Model
         return $this->Values->get($column_name);
     }
 
+
     /**
      * Fetches a new Model based on $conditions
      *
@@ -64,7 +84,7 @@ class Model
     {
         $this->TableMeta->guardHasColumns(array_keys($conditions));
 
-        $values = $this->Driver->fetchFirstBy($this->TableMeta->database_name, $this->TableMeta->table_name, $conditions);
+        $values = $this->Driver->fetchFirstBy($this->TableMeta, $conditions);
 
         if ($values === false) {
             throw new OrmException(sprintf('%s.%s record not found', $this->TableMeta->database_name, $this->TableMeta->table_name));
@@ -76,28 +96,26 @@ class Model
         return $model;
     }
 
+
     /**
-     * Returns the primary key column name(s)
+     * Returns the primary key column values(s)
      *
-     * @return int|string|array<string,mixed>|null
+     * To get the primary key column names: Model->TableMeta->pk_columns[]
+     *
+     * @return array<string,mixed>
      *
      * @throws OrmException
      */
-    public function getPk(): int|string|array|null
+    public function getPk(): array
     {
         $this->TableMeta->guardHasPrimaryKey();
 
-        $pk_column_names = $this->TableMeta->pk_columns;
-
-        if (count($pk_column_names) === 1) {
-            return $this->Values->get($pk_column_names[0]);
-        }
-
-        return $this->Values->get($pk_column_names);
+        return $this->Values->get($this->TableMeta->pk_columns);
     }
 
+
     /**
-     * Fetches a new Model by it's primary key
+     * Fetches a new Model by its primary key
      *
      * @param int|string|array<string,mixed> $value
      *
@@ -109,43 +127,63 @@ class Model
     {
         $this->TableMeta->guardHasPrimaryKey();
 
-        if (count($this->TableMeta->pk_columns) === 1) {
+        if (!is_array($value)) {
+            // fetch by simple pk
 
-            if (is_array($value)) {
-                throw new OrmException(sprintf('%s.%s: scalar expected', $this->TableMeta->database_name, $this->TableMeta->table_name));
+            if (count($this->TableMeta->pk_columns) > 1) {
+                throw new OrmException(sprintf('%s.%s: array expected', $this->TableMeta->database_name, $this->TableMeta->table_name));
             }
 
             return $this->fetchBy([$this->TableMeta->pk_columns[0] => $value]);
         }
 
-        if (!is_array($value)) {
-            throw new OrmException(sprintf('%s.%s: array expected', $this->TableMeta->database_name, $this->TableMeta->table_name));
+        // fetch by composite pk
+        foreach ($this->TableMeta->pk_columns as $pk_column_name) {
+
+            if (!isset($value[$pk_column_name])) {
+                throw new OrmException(sprintf('missing pk column %s ', $pk_column_name));
+            }
         }
 
         return $this->fetchBy($value);
     }
 
+
     /**
-     * Lazily fetches Child Models for this Model
+     * Lazily fetches Child $child_table_name Models associated with this Model
      *
      * @param string $child_table_name
      * @param array<string,mixed> $conditions
+     *
      * @return Query
      *
      * @throws OrmException
      */
-    public function fetchChildren(string $child_table_name, array $conditions= []): Query
+    public function fetchChildren(string $child_table_name, array $conditions = []): Query
     {
         $this->TableMeta->guardHasChild($child_table_name);
+        $this->TableMeta->guardHasPrimaryKey();
+
+
+        if ($this->isPkNull()) {
+            throw new OrmException('primary key not set');
+        }
+
+        $pk_value = $this->getPk();
+
+        if (count($pk_value) !== 1) {
+            throw new OrmException('multi-column foreign keys not supported');
+        }
 
         $child_column_name = $this->TableMeta->ChildrenMeta[$child_table_name]->referenced_column_name;
 
-        $conditions[$child_column_name] = $this->getPk();
+        $conditions[$child_column_name] = $pk_value[$this->TableMeta->pk_columns[0]];
 
         $query = new Query($this->Driver, $child_table_name, $conditions);
 
         return $query;
     }
+
 
     /**
      * Fetches the parent model pointed to by $column_name
@@ -158,12 +196,12 @@ class Model
      */
     public function fetchParent(string $fk_column_name): Model
     {
-        $this->TableMeta->guardHasParent($fk_column_name);
+        $this->TableMeta->guardIsForeignKey($fk_column_name);
 
         $parent_meta = $this->TableMeta->ParentMeta[$fk_column_name];
 
         if ($this->Values->get($fk_column_name) === null) {
-            throw new OrmException(sprintf('%s.%s.%s is null', $this->TableMeta->database_name,$this->TableMeta->table_name,$fk_column_name));
+            throw new OrmException(sprintf('%s.%s.%s is null', $this->TableMeta->database_name, $this->TableMeta->table_name, $fk_column_name));
         }
 
         $child = (new Model($this->Driver, $parent_meta->referenced_table_name))
@@ -171,6 +209,7 @@ class Model
 
         return $child;
     }
+
 
     /**
      * Save the Model, it's parents and it's children, wrapped in a transaction
@@ -198,7 +237,10 @@ class Model
         }
     }
 
+
     /**
+     * Saves a model recursively
+     *
      * @return void
      *
      * @throws OrmException
@@ -209,12 +251,8 @@ class Model
 
         $values = $this->Values->getColumnValues();
 
-        if ($this->getPk() === null) {
-            $insert_id = $this->Driver->insert(
-                $this->TableMeta->database_name,
-                $this->TableMeta->table_name,
-                $values
-            );
+        if ($this->isPkNull()) {
+            $insert_id = $this->Driver->insert($this->TableMeta, $values);
 
             $this->Values->set($this->TableMeta->pk_columns[0], $insert_id);
         } else {
@@ -228,15 +266,10 @@ class Model
                 $conditions[$column_name] = $this->Values->get($column_name);
             }
 
-            $affected = $this->Driver->update(
-                $this->TableMeta->database_name,
-                $this->TableMeta->table_name,
-                $values,
-                $conditions
-            );
+            $affected = $this->Driver->update($this->TableMeta, $values, $conditions);
 
             if ($affected !== 1) {
-                throw new RuntimeException('how?');
+                throw new RuntimeException('impossible?');
             }
         }
 
@@ -245,6 +278,8 @@ class Model
 
 
     /**
+     * Saves any foreign key models
+     *
      * @return void
      *
      * @throws OrmException
@@ -253,7 +288,7 @@ class Model
     {
         foreach ($this->TableMeta->ParentMeta as $column_name => $parent_meta) {
 
-            if (!$this->Values->has($column_name)) {
+            if (!$this->Values->hasColumn($column_name)) {
                 continue;
             }
 
@@ -262,14 +297,22 @@ class Model
             if ($parent instanceof Model) {
                 $parent->_save();
 
+                if ($parent->isPkNull()) {
+                    throw new RuntimeException('impossible?');
+                }
+
+                $parent_pk_value = $parent->getPk();
+
                 //set the fk column in this model to the primary key of the parent model
-                $this->Values->set($column_name, $parent->getPk());
+                $this->Values->set($column_name, $parent_pk_value[$parent->TableMeta->pk_columns[0]]);
             }
         }
     }
 
 
     /**
+     * Saves any children models
+     *
      * @return void
      *
      * @throws OrmException
@@ -278,7 +321,7 @@ class Model
     {
         foreach ($this->TableMeta->ChildrenMeta as $child_table_name => $child_meta) {
 
-            if ($this->Values->has($child_table_name)) {
+            if ($this->Values->hasColumn($child_table_name)) {
 
                 $children = $this->Values->get($child_table_name);
 
@@ -292,7 +335,8 @@ class Model
                     }
 
                     // TODO: will fail for composite keys
-                    $child_model->set($child_meta->referenced_column_name, $this->getPk());
+                    $pk_value = $this->get($this->TableMeta->pk_columns[0]);
+                    $child_model->set($child_meta->referenced_column_name, $pk_value);
                     $child_model->_save();
                 }
 
@@ -303,20 +347,43 @@ class Model
 
 
     /**
-     * Sets $column_name to $value
+     * Deletes the current model
      *
-     * @param string|array<string,mixed> $column_name
-     * @param mixed|null $value
-     *
-     * @return self
+     * @return void
      *
      * @throws OrmException
      */
-    public function set(string|array $column_name, mixed $value = null): self
+    public function delete(): void
     {
-        $this->Values->set($column_name, $value);
+        $this->TableMeta->guardHasPrimaryKey();
 
-        return $this;
+        if ($this->isPkNull()) {
+            throw new OrmException('primary key not set');
+        }
+
+        try {
+            $this->Driver->delete($this->TableMeta, $this->getPk());
+        } catch (Throwable $e) {
+            throw new OrmException($e->getMessage());
+        }
+    }
+
+
+    /**
+     * @return bool
+     *
+     * @throws OrmException
+     */
+    public function isPkNull(): bool
+    {
+        foreach ($this->TableMeta->pk_columns as $pk_column_name) {
+
+            if ($this->get($pk_column_name) !== null) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
 }

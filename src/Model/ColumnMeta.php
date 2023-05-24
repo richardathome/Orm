@@ -48,6 +48,8 @@ class ColumnMeta
     }
 
     /**
+     * Checks $value is valid for it's mysql type and cast it to its PHP type
+     *
      * @param mixed $value
      *
      * @return mixed
@@ -90,6 +92,8 @@ class ColumnMeta
     }
 
     /**
+     * Checks $value is in range for this column type
+     *
      * @param mixed $value
      * @return mixed
      *
@@ -107,6 +111,8 @@ class ColumnMeta
 
 
     /**
+     * Checks $value is valid for a mysql Int and cast it to a PHP int
+     *
      * @param mixed $value
      *
      * @return int|string
@@ -137,6 +143,8 @@ class ColumnMeta
 
 
     /**
+     * Checks $value is valid for a mysql Varchar and cast it to a PHP string
+     *
      * @param mixed $value
      *
      * @return string
@@ -162,6 +170,8 @@ class ColumnMeta
 
 
     /**
+     * Checks $value is valid for a mysql Date and cast it to a PHP Date
+     *
      * @param mixed $value
      *
      * @return Date
@@ -183,6 +193,12 @@ class ColumnMeta
 
 
     /**
+     * Checks $value is valid for a mysql Datetime and cast it to a PHP DateTime
+     *
+     * @param mixed $value
+     *
+     * @return DateTime
+     *
      * @throws OrmException
      */
     public function toDateTime(mixed $value): DateTime
@@ -209,6 +225,8 @@ class ColumnMeta
 
 
     /**
+     * Checks $value is valid for a mysql Decimal and casts it to a PHP string
+     *
      * @param mixed $value
      *
      * @return string
@@ -240,6 +258,8 @@ class ColumnMeta
 
 
     /**
+     * Checks $value is valid for a mysql Double and casts it to a PHP string
+     *
      * @param mixed $value
      *
      * @return string
@@ -271,6 +291,8 @@ class ColumnMeta
 
 
     /**
+     * Checks $value is valid for a mysql Enum and casts it to a PHP string
+     *
      * @param mixed $value
      * @return string
      *
@@ -293,7 +315,10 @@ class ColumnMeta
         return $value;
     }
 
+
     /**
+     * Checks $value is valid for a mysql Float and cast it to a PHP float
+     *
      * @param mixed $value
      * @return float
      *
@@ -316,6 +341,8 @@ class ColumnMeta
 
 
     /**
+     * Checks $value is valid for a mysql Json and cast it to a PHP array
+     *
      * @param mixed $value
      *
      * @return array<string,mixed>
@@ -346,6 +373,8 @@ class ColumnMeta
 
 
     /**
+     * Checks $value is valid for a mysql Set and cast it to a PHP array
+     *
      * @param mixed $value
      *
      * @return array<string,mixed>
@@ -375,6 +404,8 @@ class ColumnMeta
 
 
     /**
+     * Checks $value is valid for a mysql Time and casts it to a PHP DateTime
+     *
      * @param mixed $value
      *
      * @return DateTime

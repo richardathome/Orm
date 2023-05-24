@@ -14,7 +14,7 @@ use Richbuilds\Orm\OrmException;
 use RuntimeException;
 
 /**
- * Responsible for communicating with a mysql pdo datasource
+ * Responsible for interacting with a mysql pdo datasource
  */
 class MySqlDriver extends Driver
 {
@@ -37,7 +37,7 @@ class MySqlDriver extends Driver
         PDO $pdo
     )
     {
-        $this->guardValidDriver($pdo,'mysql');
+        $this->guardValidDriver($pdo, 'mysql');
 
         parent::__construct($pdo, new MySqlQueryBuilder());
 
@@ -48,6 +48,7 @@ class MySqlDriver extends Driver
         }
 
     }
+
 
     /**
      * @inheritDoc
@@ -160,6 +161,7 @@ class MySqlDriver extends Driver
         return $this->table_meta_cache[$database_name][$table_name];
     }
 
+
     /**
      * Returns the smallest value this column can contain
      *
@@ -169,7 +171,7 @@ class MySqlDriver extends Driver
      *
      * @return mixed
      */
-    private function getMinValue(mixed $data_type, bool $is_signed,int $max_character_length): mixed
+    private function getMinValue(mixed $data_type, bool $is_signed, int $max_character_length): mixed
     {
 
         // Check if the data type is a range type
@@ -263,6 +265,7 @@ class MySqlDriver extends Driver
         return $max_values[$is_signed][$data_type];
     }
 
+
     /**
      * Returns an array of valid options for an enum/set
      *
@@ -289,26 +292,26 @@ class MySqlDriver extends Driver
         return $options;
     }
 
+
     /**
      * @inheritDoc
      */
-    public function insert(string $database_name, string $table_name, array $values = [], array $conditions = []): bool|string
+    public function insert(TableMeta $table_meta, array $values = [], array $conditions = []): bool|string
     {
-        $sql = $this->QueryBuilder->buildInsert($database_name, $table_name, $values, $conditions);
+        $sql = $this->QueryBuilder->buildInsert($table_meta, $values, $conditions);
 
         $this->prepareAndExec($sql, $values);
 
         return $this->pdo->lastInsertId();
-
-
     }
+
 
     /**
      * @inheritDoc
      */
-    public function update(string $database_name, string $table_name, array $values = [], array $conditions = []): int
+    public function update(TableMeta $table_meta, array $values = [], array $conditions = []): int
     {
-        $sql = $this->QueryBuilder->buildUpdate($database_name, $table_name, $values, $conditions);
+        $sql = $this->QueryBuilder->buildUpdate($table_meta, $values, $conditions);
 
         $stmt = $this->prepareAndExec($sql, $values);
 
@@ -316,4 +319,13 @@ class MySqlDriver extends Driver
     }
 
 
+    /**
+     * @inheritDoc
+     */
+    public function delete(TableMeta $table_meta, array $conditions): void
+    {
+        $sql = $this->QueryBuilder->buildDelete($table_meta, $conditions);
+
+        $this->prepareAndExec($sql, $conditions);
+    }
 }

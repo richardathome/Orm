@@ -1,12 +1,15 @@
-[![RichBuilds Components](/src/richbuilds_logo.png)](https://richbuilds.com)
-![ORM](/src/orm_logo.png)
+[![RichBuilds Components](/docs/richbuilds_logo.png)](https://richbuilds.com)
+![ORM](/docs/orm_logo.png)
 
 # ORM
-A Wireless, typesafe ORM for PHP 8.1. 
+A wireless, typesafe ORM for PHP 8.1. 
 
 Currently only MySql data sources are supported, but Sqlite and Postgres are planned.
 
-## Quickstart
+The ORM takes all it's instruction from the database. Make sure your primary and foreign keys are set up correctly.
+
+## Example usage:
+
 ```php
 $orm = new Orm(new PDO('dsn','username','password'));
 ```
@@ -55,7 +58,7 @@ $user = $orm->Model('user');
 $post->set('author_id', $user);
 ```
 
-## Set a foreign key column to a an array of parent values
+## Set a foreign key column to n array of parent model values
 
 ```php
 $user = ['name'=>'foo','password'=>'password'];
@@ -63,13 +66,12 @@ $post->set('author_id', $user);
 ```
 
 # Set the children of a model
-- accepts arrays of fields
-- accepts array of models
+- accepts arrays of fields or models
 
 ```php
 $user->set('comments',[
     ['comment'=>'foo', 'visible'=>false],
-    $orm->Model('comments')->set('comment', 'bar')]
+    $orm->Model('comments')->set('comment', 'bar')
 ]);
 ```
 
@@ -86,7 +88,8 @@ echo $post->getPk();
 - fails if column name is not a foreign key or parent doesn't exist
 
 ```php
-$author = $post->fetchPatent('author_id');
+$author = $post->fetchParent('author_id');
+// SELECT * FROM users WHERE users.id = posts.author_id
 echo $author->get('name');
 ```
 
@@ -95,6 +98,7 @@ echo $author->get('name');
 
 ```php
 $posts = $user->fetchChildrent('posts');
+// SELECT * FROM posts WHERE posts.author_id = user.id
 ```
 
 # Query

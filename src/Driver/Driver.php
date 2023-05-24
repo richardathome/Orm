@@ -28,7 +28,8 @@ abstract class Driver
 
 
     /**
-     * Returns the TableMeta for $table_name
+     * Returns the query to fetch the metadata for all the columns in
+     * $database_name.$table_name along with associated foreign key metadata
      *
      * @param string $table_name
      *
@@ -38,27 +39,42 @@ abstract class Driver
      */
     abstract public function fetchTableMeta(string $table_name): TableMeta;
 
+
     /**
-     * @param string $database_name
-     * @param string $table_name
+     * Inserts values into $database_name.$table_name using $conditions
+     *
+     * @param TableMeta $table_meta
      * @param array<string,mixed> $values
      * @param array<string,mixed> $conditions
      *
-     * @return bool|string
+     * @return bool|string false on failure
      */
-    abstract public function insert(string $database_name, string $table_name, array $values = [], array $conditions = []): bool|string;
+    abstract public function insert(TableMeta $table_meta, array $values = [], array $conditions = []): bool|string;
+
 
     /**
-     * @param string $database_name
-     * @param string $table_name
+     * Updates $database_name.$table_name with $values using $conditions
+     *
+     * @param TableMeta $table_meta
      * @param array<string,mixed> $values
      * @param array<string,mixed> $conditions
      *
      * @return int
      */
-    abstract public function update(string $database_name, string $table_name, array $values = [], array $conditions = []): int;
+    abstract public function update(TableMeta $table_meta, array $values = [], array $conditions = []): int;
 
     /**
+     * @param TableMeta $table_meta
+     *
+     * @param array<string,mixed> $conditions
+     *
+     * @return void
+     */
+    abstract public function delete(TableMeta $table_meta, array $conditions): void;
+
+    /**
+     * Ensure $pdo is the correct driver type
+     *
      * @param PDO $pdo
      * @param string $expected_driver_name
      *
@@ -76,19 +92,19 @@ abstract class Driver
 
     }
 
+
     /**
      * Returns a PDO statement used by Query to lazy load a result set
      *
-     * @param string $database_name
-     * @param string $table_name
+     * @param TableMeta $table_meta
      * @param array<string,mixed> $conditions
      * @param array<string,mixed> $pagination
      *
      * @return PDOStatement
      */
-    public function fetchQueryIteratorStmt(string $database_name, string $table_name, array $conditions = [], array $pagination = []): PDOStatement
+    public function fetchQueryIteratorStmt(TableMeta $table_meta, array $conditions = [], array $pagination = []): PDOStatement
     {
-        $sql = $this->QueryBuilder->buildFetchAll($database_name, $table_name, $conditions, $pagination);
+        $sql = $this->QueryBuilder->buildFetchAll($table_meta, $conditions, $pagination);
 
         return $this->prepareAndExec($sql, $conditions);
     }
@@ -98,15 +114,14 @@ abstract class Driver
      * Returns the first row in $database_name.$table_name that matches
      * $conditions or false if no matching row is found
      *
-     * @param string $database_name
-     * @param string $table_name
+     * @param TableMeta $table_meta
      * @param array<string,mixed> $conditions
      *
      * @return array<string,mixed>|false
      */
-    public function fetchFirstBy(string $database_name, string $table_name, array $conditions): array|false
+    public function fetchFirstBy(TableMeta $table_meta, array $conditions): array|false
     {
-        $sql = $this->QueryBuilder->buildFetchFirstBy($database_name, $table_name, $conditions);
+        $sql = $this->QueryBuilder->buildFetchFirstBy($table_meta, $conditions);
 
         $stmt = $this->prepareAndExec($sql, $conditions);
 
@@ -170,6 +185,7 @@ abstract class Driver
         return $stmt->fetchColumn();
     }
 
+
     /**
      * Fetches all the rows as an array
      *
@@ -185,7 +201,10 @@ abstract class Driver
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+
     /**
+     * Begins a transaction
+     *
      * @return void
      *
      * @throws OrmException
@@ -201,8 +220,9 @@ abstract class Driver
 
 
     /**
-     * @return void
+     * Commits the current transaction
      *
+     * @return void
      */
     public function commitTransaction(): void
     {
@@ -211,14 +231,13 @@ abstract class Driver
         }
 
         $this->pdo->commit();
-
-        $this->started_in_transaction = false;
     }
 
 
     /**
-     * @return void
+     * Rolls back the current transaction
      *
+     * @return void
      */
     public function rollbackTransaction(): void
     {

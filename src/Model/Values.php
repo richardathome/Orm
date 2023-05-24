@@ -8,7 +8,7 @@ use Richbuilds\Orm\Driver\Driver;
 use Richbuilds\Orm\OrmException;
 
 /**
- * Represents a Model's column values
+ * Represents a Model's column values keyed by column name
  */
 class Values
 {
@@ -30,7 +30,10 @@ class Values
     {
     }
 
+
     /**
+     * Returns the columns current value or null if not set
+     *
      * @param string|array<string> $column_name
      *
      * @return mixed|null
@@ -61,7 +64,11 @@ class Values
         return $this->values[$column_name] ?? null;
     }
 
+
     /**
+     * Checks and sets $column_name to $value
+     * or if $column_name is an array, sets many values
+     *
      * @param array<string,mixed>|string $column_name
      * @param mixed $value
      *
@@ -69,7 +76,7 @@ class Values
      *
      * @throws OrmException
      */
-    public function set(array|string $column_name, mixed $value): self
+    public function set(array|string $column_name, mixed $value=null): self
     {
         if (is_array($column_name)) {
             return $this->setMany($column_name);
@@ -89,8 +96,7 @@ class Values
                 return $this->setParentModel($column_name, $value);
             }
 
-            return $this->setParentValue($column_name, $value);
-
+            return $this->setParentReference($column_name, $value);
         }
 
         // set a simple value
@@ -103,6 +109,8 @@ class Values
 
 
     /**
+     * Checks and sets many column values at once
+     *
      * @param array<string,mixed> $values
      *
      * @return self
@@ -128,10 +136,15 @@ class Values
 
     }
 
+
     /**
+     * Checks and sets children values
+     *
      * @param string $children_table_name
      * @param mixed $children
+     *
      * @return self
+     *
      * @throws OrmException
      */
     private function setChildren(string $children_table_name, mixed $children): self
@@ -174,7 +187,10 @@ class Values
         return $this;
     }
 
+
     /**
+     * Checks and sets a foreign key column from an array source
+     *
      * @param string $parent_column_name
      * @param array<string,mixed> $parent_values
      *
@@ -184,7 +200,7 @@ class Values
      */
     private function setParentArray(string $parent_column_name, array $parent_values): self
     {
-        $this->TableMeta->guardHasParent($parent_column_name);
+        $this->TableMeta->guardIsForeignKey($parent_column_name);
 
         // test $parent_values valid for the parent
         $parent_meta = $this->TableMeta->ParentMeta[$parent_column_name];
@@ -198,6 +214,8 @@ class Values
     }
 
     /**
+     * Checks and sets a foreign key column from a model source
+     *
      * @param string $parent_column_name
      * @param Model $parent_model
      *
@@ -207,7 +225,7 @@ class Values
      */
     private function setParentModel(string $parent_column_name, Model $parent_model): self
     {
-        $this->TableMeta->guardHasParent($parent_column_name);
+        $this->TableMeta->guardIsForeignKey($parent_column_name);
 
         if ($this->TableMeta->ParentMeta[$parent_column_name]->referenced_table_name !== $parent_model->TableMeta->table_name) {
             throw new OrmException(sprintf(
@@ -226,6 +244,8 @@ class Values
     }
 
     /**
+     * Checks and sets a foreign key column from reference
+     *
      * @param string $column_name
      * @param mixed $value
      *
@@ -233,9 +253,9 @@ class Values
      *
      * @throws OrmException
      */
-    private function setParentValue(string $column_name, mixed $value): self
+    private function setParentReference(string $column_name, mixed $value): self
     {
-        $this->TableMeta->guardHasParent($column_name);
+        $this->TableMeta->guardIsForeignKey($column_name);
 
         $value = $this->TableMeta->ColumnMeta[$column_name]->toPhp($value);
 
@@ -256,15 +276,16 @@ class Values
         return $this;
     }
 
+
     /**
+     * Returns a filtered array of values without any children columns
+     *
      * @return array<string,mixed>
      */
     public function getColumnValues(): array
     {
-
         $values = $this->values;
 
-        // remove any children values as they are saved after this record is created
         foreach (array_keys($this->TableMeta->ChildrenMeta) as $child_table_name) {
             if (isset($values[$child_table_name])) {
                 unset($values[$child_table_name]);
@@ -274,27 +295,32 @@ class Values
         return $values;
     }
 
+
     /**
-     * @param string $key
+     * Checks if $key exists
+     *
+     * @param string $column_name
      *
      * @return bool
      */
-    public function has(string $key): bool
+    public function hasColumn(string $column_name): bool
     {
-        return isset($this->values[$key]);
+        return isset($this->values[$column_name]);
     }
 
+
     /**
-     * @param string $key
+     * Removes $column_name from the list of values
+     *
+     * @param string $column_name
      *
      * @return $this
      */
-    public function remove(string $key): self
+    public function remove(string $column_name): self
     {
-        unset($this->values[$key]);
+        unset($this->values[$column_name]);
 
         return $this;
     }
-
 
 }

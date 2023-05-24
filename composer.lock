@@ -74,12 +74,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/nikic/PHP-Parser.git",
-                "reference": "ba788aa98b9f20ebe2bfdbaec152eca69636943d"
+                "reference": "c9e5a13d68486e9fd75f9be1b4639644e54e7f4f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/ba788aa98b9f20ebe2bfdbaec152eca69636943d",
-                "reference": "ba788aa98b9f20ebe2bfdbaec152eca69636943d",
+                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/c9e5a13d68486e9fd75f9be1b4639644e54e7f4f",
+                "reference": "c9e5a13d68486e9fd75f9be1b4639644e54e7f4f",
                 "shasum": ""
             },
             "require": {
@@ -123,7 +123,7 @@
                 "issues": "https://github.com/nikic/PHP-Parser/issues",
                 "source": "https://github.com/nikic/PHP-Parser/tree/4.x"
             },
-            "time": "2023-05-19T20:26:12+00:00"
+            "time": "2023-05-21T19:22:47+00:00"
         },
         {
             "name": "phar-io/manifest",
@@ -250,12 +250,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "022621756132b7d8a272aa5ad8a674ee9aa01918"
+                "reference": "19c838b55c3f68b470d0501e2071c0a0571c75ae"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/022621756132b7d8a272aa5ad8a674ee9aa01918",
-                "reference": "022621756132b7d8a272aa5ad8a674ee9aa01918",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/19c838b55c3f68b470d0501e2071c0a0571c75ae",
+                "reference": "19c838b55c3f68b470d0501e2071c0a0571c75ae",
                 "shasum": ""
             },
             "require": {
@@ -305,7 +305,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-05-21T10:07:11+00:00"
+            "time": "2023-05-23T14:49:14+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -313,12 +313,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-code-coverage.git",
-                "reference": "b10b1fb20600a35b13fbc58d34d3958f8c3d81ef"
+                "reference": "db1497ec8dd382e82c962f7abbe0320e4882ee4e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/b10b1fb20600a35b13fbc58d34d3958f8c3d81ef",
-                "reference": "b10b1fb20600a35b13fbc58d34d3958f8c3d81ef",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/db1497ec8dd382e82c962f7abbe0320e4882ee4e",
+                "reference": "db1497ec8dd382e82c962f7abbe0320e4882ee4e",
                 "shasum": ""
             },
             "require": {
@@ -376,7 +376,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/php-code-coverage/issues",
                 "security": "https://github.com/sebastianbergmann/php-code-coverage/security/policy",
-                "source": "https://github.com/sebastianbergmann/php-code-coverage/tree/main"
+                "source": "https://github.com/sebastianbergmann/php-code-coverage/tree/10.1.2"
             },
             "funding": [
                 {
@@ -384,7 +384,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2023-05-07T06:59:16+00:00"
+            "time": "2023-05-22T09:04:27+00:00"
         },
         {
             "name": "phpunit/php-file-iterator",
@@ -1053,12 +1053,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/diff.git",
-                "reference": "da30e5818167af846668bfebc135a178a111941f"
+                "reference": "16c3ab34da02ff41f78174276f8ab60c89d7c23e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/diff/zipball/da30e5818167af846668bfebc135a178a111941f",
-                "reference": "da30e5818167af846668bfebc135a178a111941f",
+                "url": "https://api.github.com/repos/sebastianbergmann/diff/zipball/16c3ab34da02ff41f78174276f8ab60c89d7c23e",
+                "reference": "16c3ab34da02ff41f78174276f8ab60c89d7c23e",
                 "shasum": ""
             },
             "require": {
@@ -1072,7 +1072,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "5.0-dev"
+                    "dev-main": "5.1-dev"
                 }
             },
             "autoload": {
@@ -1113,7 +1113,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2023-05-07T06:51:55+00:00"
+            "time": "2023-05-22T02:44:52+00:00"
         },
         {
             "name": "sebastian/environment",

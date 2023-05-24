@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Richbuilds\Orm\Driver;
 
+use Richbuilds\Orm\Model\TableMeta;
+
 /**
  * builds sql92 compliant queries
  */
@@ -22,31 +24,34 @@ abstract class QueryBuilder
 
 
     /**
-     * @param string $database_name
-     * @param string $table_name
+     * Returns the sql query to fetch the first matching row
+     *
+     * @param TableMeta $table_meta
      * @param array<string,mixed> $conditions
      *
      * @return string
      */
-    public function buildFetchFirstBy(string $database_name, string $table_name, array $conditions = []): string
+    public function buildFetchFirstBy(TableMeta $table_meta, array $conditions = []): string
     {
-        $sql = sprintf('SELECT * FROM `%s`.`%s`', $database_name, $table_name);
+        $sql = sprintf('SELECT * FROM `%s`.`%s`', $table_meta->database_name, $table_meta->table_name);
 
-        $sql .= $this->buildWhere($database_name, $table_name, $conditions);
+        $sql .= $this->buildWhere($table_meta, $conditions);
 
         $sql .= ' LIMIT 1';
 
         return $sql . ';';
     }
 
+
     /**
-     * @param string $database_name
-     * @param string $table_name
+     * Builds a where clause from $conditions
+     *
+     * @param TableMeta $table_meta
      * @param array<string,mixed> $conditions
      *
      * @return string
      */
-    protected function buildWhere(string $database_name, string $table_name, array $conditions = []): string
+    protected function buildWhere(TableMeta $table_meta, array $conditions = []): string
     {
         if (empty($conditions)) {
             return '';
@@ -69,9 +74,9 @@ abstract class QueryBuilder
                     $placeholder = ':' . $column_name . '_value_' . $index;
                     $placeholders[] = $placeholder;
                 }
-                $where .= sprintf('`%s`.`%s`.`%s` IN (%s) AND ', $database_name, $table_name, $column_name, implode(', ', $placeholders));
+                $where .= sprintf('`%s`.`%s`.`%s` IN (%s) AND ', $table_meta->database_name, $table_meta->table_name, $column_name, implode(', ', $placeholders));
             } else {
-                $where .= sprintf('`%s`.`%s`.`%s` %s :%s AND ', $database_name, $table_name, $column_name, $comparator, $column_name);
+                $where .= sprintf('`%s`.`%s`.`%s` %s :%s AND ', $table_meta->database_name, $table_meta->table_name, $column_name, $comparator, $column_name);
             }
         }
 
@@ -82,26 +87,28 @@ abstract class QueryBuilder
 
 
     /**
-     * @param string $database_name
-     * @param string $table_name
-     *
+     * Returns the sql to fetch all rows matching $conditions
+     * @param TableMeta $table_meta
      * @param array<string,mixed> $conditions
      * @param array<string,mixed> $pagination
      *
      * @return string
      */
-    public function buildFetchAll(string $database_name, string $table_name, array $conditions = [], array $pagination = []): string
+    public function buildFetchAll(TableMeta $table_meta, array $conditions = [], array $pagination = []): string
     {
-        $sql = sprintf('SELECT * FROM `%s`.`%s`', $database_name, $table_name);
+        $sql = sprintf('SELECT * FROM `%s`.`%s`', $table_meta->database_name, $table_meta->table_name);
 
-        $sql .= $this->buildWhere($database_name, $table_name, $conditions);
+        $sql .= $this->buildWhere($table_meta, $conditions);
 
         $sql .= $this->buildPagination($pagination);
 
         return $sql . ';';
     }
 
+
     /**
+     * Builds the LIMIT and OFFSET clause
+     *
      * @param array{
      *     page?: int,
      *     per_page?: int
@@ -124,39 +131,43 @@ abstract class QueryBuilder
         return $result;
     }
 
+
     /**
-     * @param string $database_name
-     * @param string $table_name
+     * Builds the SQL statement to insert $values
+     *
+     * @param TableMeta $table_meta
      * @param array<string,mixed> $values
      * @param array<string,mixed> $conditions
      *
      * @return string
      */
-    public function buildInsert(string $database_name, string $table_name, array $values, array $conditions): string
+    public function buildInsert(TableMeta $table_meta, array $values, array $conditions): string
     {
         /** @noinspection Annotator */
-        $sql = sprintf('INSERT INTO `%s`.`%s` (`', $database_name, $table_name)
+        $sql = sprintf('INSERT INTO `%s`.`%s` (`', $table_meta->database_name, $table_meta->table_name)
             . join('`, `', array_keys($values))
             . '`) VALUES ('
             . ':' . join(', :', array_keys($values))
             . ')'
-            . $this->buildWhere($database_name,$table_name, $conditions);
+            . $this->buildWhere($table_meta, $conditions);
 
         return $sql . ';';
     }
 
+
     /**
-     * @param string $database_name
-     * @param string $table_name
+     * Builds the SQL statement to update $table_name with $values
+     *
+     * @param TableMeta $table_meta
      * @param array<string,mixed> $values
      * @param array<string,mixed> $conditions
      *
      * @return string
      */
-    public function buildUpdate(string $database_name, string $table_name, array $values, array $conditions): string
+    public function buildUpdate(TableMeta $table_meta, array $values, array $conditions): string
     {
         /** @noinspection Annotator */
-        $sql = sprintf('UPDATE `%s`.`%s` SET ', $database_name, $table_name);
+        $sql = sprintf('UPDATE `%s`.`%s` SET ', $table_meta->database_name, $table_meta->table_name);
 
         foreach ($values as $column_name => $value) {
             $sql .= '`' . $column_name . '` = :' . $column_name . ',';
@@ -164,8 +175,23 @@ abstract class QueryBuilder
 
         $sql = substr($sql, 0, -1);
 
-        $sql .= $this->buildWhere($database_name,$table_name, $conditions);
+        $sql .= $this->buildWhere($table_meta, $conditions);
 
         return $sql . ';';
+    }
+
+    /**
+     * @param TableMeta $table_meta
+     * @param array<string,mixed> $conditions
+     *
+     * @return string
+     */
+    public function buildDelete(TableMeta $table_meta, array $conditions): string
+    {
+        $sql = sprintf('DELETE FROM `%s`.`%s`', $table_meta->database_name, $table_meta->table_name);
+
+        $sql .= $this->buildWhere($table_meta, $conditions);
+
+        return $sql;
     }
 }

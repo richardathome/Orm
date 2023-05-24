@@ -19,7 +19,7 @@ class ModelPkTest extends MySqlTestBase
     {
         $model = self::$Orm->Model('users');
 
-        self::assertEquals(null, $model->getPk());
+        self::assertEquals(['id'=>null], $model->getPk());
     }
 
 
@@ -29,20 +29,36 @@ class ModelPkTest extends MySqlTestBase
      */
     public function testGetPkWorksForCompositePk(): void
     {
-        $model = self::$Orm->Model('composite_pk');
+        $model = self::$Orm->Model('composite_pk')->set([
+            'f1' => 1,
+            'f2' => 2
+        ]);
 
-        self::assertEquals(['f1' => null, 'f2' => null], $model->getPk());
+        self::assertEquals(['f1' => 1, 'f2' => 2], $model->getPk());
     }
 
     /**
      * @return void
      * @throws OrmException
      */
-    public function testFetchByPkFailsForTableWithNoPk(): void {
-
+    public function testFetchByPkFailsForTableWithNoPk(): void
+    {
         self::expectExceptionMessage('orm_test.no_pk has no primary key');
 
         self::$Orm->Model('no_pk')->fetchByPk(1);
+    }
+
+
+    /**
+     * @return void
+     *
+     * @throws OrmException
+     */
+    public function testFetchByCompositePkFailsIfColumnMissing(): void
+    {
+        self::expectExceptionMessage('missing pk column f1');
+
+        self::$Orm->Model('composite_pk')->fetchByPk(['foo' => 'bar']);
     }
 
 }
