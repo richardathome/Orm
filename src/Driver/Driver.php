@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Richbuilds\Orm\Driver;
 
+use DateTime;
+use Richbuilds\Orm\Model\Date;
 use RuntimeException;
 use PDO;
 use PDOStatement;
@@ -136,6 +138,8 @@ abstract class Driver
      * @param array<string,mixed> $parameters
      *
      * @return PDOStatement
+     *
+     * @throws OrmException
      */
     protected function prepareAndExec(string $sql, array $parameters = []): PDOStatement
     {
@@ -177,6 +181,8 @@ abstract class Driver
      * @param array<string,mixed> $parameters
      *
      * @return mixed
+     *
+     * @throws OrmException
      */
     protected function fetchSqlColumn(string $sql, array $parameters = []): mixed
     {

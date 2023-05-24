@@ -30,7 +30,7 @@ class Model
      */
     public function __construct(
         private readonly Driver $Driver,
-        string                 $table_name
+        string                  $table_name
     )
     {
         $this->TableMeta = $this->Driver->fetchTableMeta($table_name);
@@ -250,6 +250,10 @@ class Model
         $this->saveParents();
 
         $values = $this->Values->getColumnValues();
+
+        foreach ($values as $column_name => $value) {
+            $values[$column_name] = $this->TableMeta->ColumnMeta[$column_name]->toSql($value);
+        }
 
         if ($this->isPkNull()) {
             $insert_id = $this->Driver->insert($this->TableMeta, $values);

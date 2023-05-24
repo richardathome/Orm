@@ -28,7 +28,6 @@ class ModelSetGetTest extends MySqlTestBase
      */
     public function testGetSetSingleColumn(string $column_name, mixed $value, mixed $expected_value, string $expected_error): void
     {
-
         $model = self::$Orm->Model('datatypes');
 
         if (!empty($expected_error)) {
@@ -39,7 +38,14 @@ class ModelSetGetTest extends MySqlTestBase
 
         if (empty($expected_error)) {
             self::assertEquals($expected_value, $model->get($column_name));
+
+            $model->save();
+
+            $reload = $model->fetchByPk($model->getPk());
+
+            self::assertEquals($expected_value, $reload->get($column_name));
         }
+
     }
 
     /**
@@ -49,170 +55,169 @@ class ModelSetGetTest extends MySqlTestBase
     {
         $minDate = new Date('1000-01-01');
         $maxDate = new Date('9999-12-31');
-        $date = new Date();
+        $date = new Date('2023-05-24');
 
         $minDateTime = new DateTime('1000-01-01 00:00:00');
         $maxDateTime = new DateTime('9999-12-31 23:59:59');
-        $datetime = new DateTime('1968-05-17 05:35:41');
+        $datetime = new DateTime('2023-05-24 13:58:45');
         $datetime_string = $datetime->format('Y-m-d H:i:s');
 
-        $time = DateTime::createFromFormat('H:i:s', (new DateTime())->format('H:i:s'));
+        $time = '10:21:56';
 
         return [
-            ['invalid_column', null, null, 'unknown column invalid_column in orm_test.datatypes'],
+            0 => ['invalid_column', null, null, 'unknown column invalid_column in orm_test.datatypes'],
 
-            ['allow_null', null, null, ''],
-            ['not_null', 'foo', 'foo', ''],
+            1 => ['allow_null', null, null, ''],
+            2 => ['not_null', 'foo', 'foo', ''],
 
-            ['not_null', null, null, 'cannot be null'],
-            ['not_null', 'foo', 'foo', ''],
+            3 => ['not_null', null, null, 'cannot be null'],
+            4 => ['not_null', 'foo', 'foo', ''],
 
-            ['bigint_unsigned', 'foo', null, 'expected unsigned bigint, got string'],
-            ['bigint_unsigned', -1, null, 'out of range for unsigned bigint'],
-            ['bigint_unsigned', 1, '1', ''],
+            5 => ['bigint_unsigned', 'foo', null, 'expected unsigned bigint, got string'],
+            6 => ['bigint_unsigned', -1, null, 'out of range for unsigned bigint'],
+            7 => ['bigint_unsigned', 1, '1', ''],
 
-            ['bigint_signed', 'foo', null, 'expected signed bigint, got string'],
-            ['bigint_signed', -1, '-1', ''],
-            ['bigint_signed', 1, '1', ''],
+            8 => ['bigint_signed', 'foo', null, 'expected signed bigint, got string'],
+            9 => ['bigint_signed', -1, '-1', ''],
+            10 => ['bigint_signed', 1, '1', ''],
 
-            ['binary', $datetime, null, 'expected binary(8), got DateTime'],
-            ['binary', '123456789', null, 'too long for binary(8)'],
-            ['binary', '00000000', '00000000', ''],
+            11 => ['binary', $datetime, null, 'expected binary(8), got DateTime'],
+            12 => ['binary', '123456789', null, 'too long for binary(8)'],
+            13 => ['binary', '00000000', '00000000', ''],
 
-            ['bit', $datetime, null, 'expected signed bit, got DateTime'],
-            ['bit', -1, null, 'out of range for signed bit'],
-            ['bit', 256, null, 'out of range for signed bit'],
-            ['bit', 0, 0, ''],
-            ['bit', 255, 255, ''],
+            14 => ['bit', $datetime, null, 'expected signed bit, got DateTime'],
+            15 => ['bit', -1, null, 'out of range for signed bit'],
+            16 => ['bit', 256, null, 'out of range for signed bit'],
+            17 => ['bit', 0, 0, ''],
+            18 => ['bit', 1, 1, ''],
 
-            ['blob', $datetime, null, 'expected blob(65535), got DateTime'],
-            ['blob', str_repeat('x', 65536), null, 'too long for blob(65535)'],
-            ['blob', str_repeat('x', 100), str_repeat('x', 100), ''],
+            19 => ['blob', $datetime, null, 'expected blob(65535), got DateTime'],
+            20 => ['blob', str_repeat('x', 65536), null, 'too long for blob(65535)'],
+            21 => ['blob', str_repeat('x', 100), str_repeat('x', 100), ''],
 
-            ['boolean', $datetime, null, 'expected signed tinyint'],
-            ['boolean', true, true, ''],
-            ['boolean', 0, false, ''],
+            22 => ['boolean', $datetime, null, 'expected signed tinyint'],
+            23 => ['boolean', true, true, ''],
+            24 => ['boolean', 0, false, ''],
 
-            ['char', $datetime, null, 'expected char(8), got DateTime'],
-            ['char', '123456789', null, 'too long for char(8)'],
-            ['char', 1, '1', ''],
-            ['char', 'foo', 'foo', ''],
+            25 => ['char', $datetime, null, 'expected char(8), got DateTime'],
+            26 => ['char', '123456789', null, 'too long for char(8)'],
+            27 => ['char', 1, '1', ''],
+            28 => ['char', 'foo', 'foo', ''],
 
-            ['date', 1, null, 'expected date, got int'],
-            ['date', new Date('0999-01-01'), null, 'out of range for date'],
-            ['date', $minDate, $minDate, ''],
-            ['date', $maxDate, $maxDate, ''],
-            ['date', $date, $date, ''],
+            29 => ['date', 1, null, 'could not convert to date'],
+            30 => ['date', new Date('0999-01-01'), null, 'out of range for date'],
+            31 => ['date', $minDate, $minDate, ''],
+            32 => ['date', $maxDate, $maxDate, ''],
+            33 => ['date', $date, $date, ''],
 
-            ['datetime', 1, null, 'could not convert to DateTime'],
-            ['datetime', new stdClass(), null, 'expected datetime, got stdClass'],
-            ['datetime', new DateTime('0999-01-01'), null, 'out of range for date'],
-            ['datetime', $minDateTime, $minDateTime, ''],
-            ['datetime', $maxDateTime, $maxDateTime, ''],
-            ['datetime', $datetime, $datetime, ''],
-            ['datetime', $datetime_string, $datetime, ''],
+            34 => ['datetime', 1, null, 'could not convert to DateTime'],
+            35 => ['datetime', new stdClass(), null, 'expected datetime, got stdClass'],
+            36 => ['datetime', new DateTime('0999-01-01'), null, 'out of range for date'],
+            37 => ['datetime', $minDateTime, $minDateTime, ''],
+            38 => ['datetime', $maxDateTime, $maxDateTime, ''],
+            39 => ['datetime', $datetime, $datetime, ''],
+            40 => ['datetime', $datetime_string, $datetime, ''],
 
-            ['decimal_unsigned', $datetime, null, 'expected unsigned decimal(3,2), got DateTime'],
-            ['decimal_unsigned', 'foo', null, 'out of range for unsigned decimal(3,2)'],
-            ['decimal_unsigned', -1, null, 'out of range for unsigned decimal(3,2)'],
-            ['decimal_unsigned', 1000, null, 'out of range for unsigned decimal(3,2)'],
-            ['decimal_unsigned', 99.999, null, 'out of range for unsigned decimal(3,2)'],
-            ['decimal_unsigned', 0, '0', ''],
-            ['decimal_unsigned', 999.99, '999.99', ''],
+            41 => ['decimal_unsigned', $datetime, null, 'expected unsigned decimal(5,2), got DateTime'],
+            42 => ['decimal_unsigned', 'foo', null, 'out of range for unsigned decimal(5,2)'],
+            43 => ['decimal_unsigned', -1, null, 'out of range for unsigned decimal(5,2)'],
+            44 => ['decimal_unsigned', 1000, null, 'out of range for unsigned decimal(5,2)'],
+            45 => ['decimal_unsigned', '0.00', '0.00', ''],
+            46 => ['decimal_unsigned', 99.99, '99.99', ''],
 
-            ['decimal_signed', $datetime, null, 'expected signed decimal(3,2), got DateTime'],
-            ['decimal_signed', -1000, null, 'out of range for signed decimal(3,2)'],
-            ['decimal_signed', 1000, null, 'out of range for signed decimal(3,2)'],
-            ['decimal_signed', -999.99, '-999.99', ''],
-            ['decimal_signed', 999.99, '999.99', ''],
+            47 => ['decimal_signed', $datetime, null, 'expected signed decimal(5,2), got DateTime'],
+            48 => ['decimal_signed', -1000, null, 'out of range for signed decimal(5,2)'],
+            49 => ['decimal_signed', 1000, null, 'out of range for signed decimal(5,2)'],
+            50 => ['decimal_signed', -99.99, '-99.99', ''],
+            51 => ['decimal_signed', 99.99, '99.99', ''],
 
-            ['double_unsigned', $datetime, null, 'expected unsigned double(22,0), got DateTime'],
-            ['double_unsigned', -1, null, 'out of range for unsigned double(22,0)'],
-            ['double_unsigned', 22.2, 22.2, ''],
+            52 => ['double_unsigned', $datetime, null, 'expected unsigned double(22,0), got DateTime'],
+            53 => ['double_unsigned', -1, null, 'out of range for unsigned double(22,0)'],
+            54 => ['double_unsigned', 22.2, 22.2, ''],
 
-            ['double_signed', $datetime, null, 'expected signed double(22,0), got DateTime'],
-            ['double_signed', -1, -1, ''],
+            55 => ['double_signed', $datetime, null, 'expected signed double(22,0), got DateTime'],
+            56 => ['double_signed', -1, -1, ''],
 
-            ['enum', $datetime, null, "expected enum('one','two','three'), got DateTime"],
-            ['enum', 'invalid', null, "invalid enum('one','two','three') value"],
-            ['enum', 'one', 'one', ''],
+            57 => ['enum', $datetime, null, "expected enum('one','two','three'), got DateTime"],
+            58 => ['enum', 'invalid', null, "invalid enum('one','two','three') value"],
+            59 => ['enum', 'one', 'one', ''],
 
-            ['float', $datetime, null, 'expected signed float(12,0), got DateTime'],
-            ['float', -1, -1.0, ''],
+            60 => ['float', $datetime, null, 'expected signed float(12,0), got DateTime'],
+            61 => ['float', -1, -1.0, ''],
 
-            ['int_unsigned', $datetime, null, 'expected unsigned int, got DateTime'],
-            ['int_unsigned', -1, null, 'out of range for unsigned int'],
-            ['int_unsigned', 0, 0, ''],
+            62 => ['int_unsigned', $datetime, null, 'expected unsigned int, got DateTime'],
+            63 => ['int_unsigned', -1, null, 'out of range for unsigned int'],
+            64 => ['int_unsigned', 0, 0, ''],
 
-            ['longblob', $datetime, null, 'expected longblob(4294967295), got DateTime'],
-            ['longblob', 'foo', 'foo', ''],
+            65 => ['longblob', $datetime, null, 'expected longblob(4294967295), got DateTime'],
+            66 => ['longblob', 'foo', 'foo', ''],
 
-            ['mediumblob', $datetime, null, 'expected mediumblob(16777215), got DateTime'],
-            ['mediumblob', 'foo', 'foo', ''],
+            67 => ['mediumblob', $datetime, null, 'expected mediumblob(16777215), got DateTime'],
+            68 => ['mediumblob', 'foo', 'foo', ''],
 
-            ['json', $datetime, null, 'expected json, got DateTime'],
-            ['json', 'invalid-json', null, 'invalid json'],
-            ['json', ['foo' => 1], ['foo' => 1], ''],
-            ['json', '{"foo": 1}', ['foo' => 1], ''],
+            69 => ['json', $datetime, null, 'expected json, got DateTime'],
+            70 => ['json', 'invalid-json', null, 'invalid json'],
+            71 => ['json', ['foo' => 1], ['foo' => 1], ''],
+            72 => ['json', '{"foo": 1}', ['foo' => 1], ''],
 
-            ['longtext', $datetime, null, 'expected longtext(4294967295), got DateTime'],
-            ['longtext', 'foo', 'foo', ''],
+            73 => ['longtext', $datetime, null, 'expected longtext(4294967295), got DateTime'],
+            74 => ['longtext', 'foo', 'foo', ''],
 
-            ['mediumint_unsigned', $datetime, null, 'expected unsigned mediumint, got DateTime'],
-            ['mediumint_unsigned', -1, null, 'out of range for unsigned mediumint'],
-            ['mediumint_unsigned', 1, 1, ''],
+            75 => ['mediumint_unsigned', $datetime, null, 'expected unsigned mediumint, got DateTime'],
+            76 => ['mediumint_unsigned', -1, null, 'out of range for unsigned mediumint'],
+            77 => ['mediumint_unsigned', 1, 1, ''],
 
-            ['mediumint_signed', $datetime, null, 'expected signed mediumint, got DateTime'],
-            ['mediumint_signed', -1, -1, ''],
-            ['mediumint_signed', 0, 0, ''],
+            78 => ['mediumint_signed', $datetime, null, 'expected signed mediumint, got DateTime'],
+            79 => ['mediumint_signed', -1, -1, ''],
+            80 => ['mediumint_signed', 0, 0, ''],
 
-            ['mediumtext', $datetime, null, 'expected mediumtext(16777215), got DateTime'],
-            ['mediumtext', 'foo', 'foo', ''],
+            81 => ['mediumtext', $datetime, null, 'expected mediumtext(16777215), got DateTime'],
+            82 => ['mediumtext', 'foo', 'foo', ''],
 
-            ['set', $datetime, null, "expected set('one','two','three'), got DateTime"],
-            ['set', 'foo', null, "invalid value for set('one','two','three')"],
-            ['set', 'one', ['one'], ''],
-            ['set', ['one', 'three'], ['one', 'three'], ''],
+            83 => ['set', $datetime, null, "expected set('one','two','three'), got DateTime"],
+            84 => ['set', 'foo', null, "invalid value for set('one','two','three')"],
+            85 => ['set', 'one', ['one'], ''],
+            86 => ['set', ['one', 'three'], ['one', 'three'], ''],
 
-            ['smallint_unsigned', $datetime, null, 'expected unsigned smallint, got DateTime'],
-            ['smallint_unsigned', -1, null, 'out of range for unsigned smallint'],
-            ['smallint_unsigned', 1, 1, ''],
+            87 => ['smallint_unsigned', $datetime, null, 'expected unsigned smallint, got DateTime'],
+            88 => ['smallint_unsigned', -1, null, 'out of range for unsigned smallint'],
+            89 => ['smallint_unsigned', 1, 1, ''],
 
-            ['smallint_signed', $datetime, null, 'expected signed smallint, got DateTime'],
-            ['smallint_signed', -1, -1, ''],
-            ['smallint_signed', 1, 1, ''],
+            90 => ['smallint_signed', $datetime, null, 'expected signed smallint, got DateTime'],
+            91 => ['smallint_signed', -1, -1, ''],
+            92 => ['smallint_signed', 1, 1, ''],
 
-            ['text', $datetime, null, 'expected text(65535), got DateTime'],
-            ['text', 'foo', 'foo', ''],
+            93 => ['text', $datetime, null, 'expected text(65535), got DateTime'],
+            94 => ['text', 'foo', 'foo', ''],
 
-            ['time', 1, null, 'expected time, got int'],
-            ['time', '99:99:99', null, 'out of range for time'],
-            ['time', $time, $time, ''],
+            95 => ['time', 1, null, 'invalid time format'],
+            96 => ['time', '99:99:99', null, 'invalid time format'],
+            97 => ['time', $time, $time, ''],
 
-            ['timestamp', 1, null, 'expected timestamp, got int'],
-            ['timestamp', $datetime, $datetime, ''],
+            98=>['timestamp', 1, null, 'could not convert to DateTime'],
+            99=>['timestamp', $datetime, $datetime, ''],
 
-            ['tinyblob', $datetime, null, 'expected tinyblob(255), got DateTime'],
-            ['tinyblob', str_repeat('x', 256), null, 'too long for tinyblob(255)'],
-            ['tinyblob', 'foo', 'foo', ''],
+            100=>['tinyblob', $datetime, null, 'expected tinyblob(255), got DateTime'],
+            101=>['tinyblob', str_repeat('x', 256), null, 'too long for tinyblob(255)'],
+            102=>['tinyblob', 'foo', 'foo', ''],
 
-            ['tinyint_unsigned', $datetime, null, 'expected unsigned tinyint, got DateTime'],
-            ['tinyint_unsigned', -1, null, 'out of range for unsigned tinyint'],
-            ['tinyint_unsigned', 1, 1, ''],
+            103=>['tinyint_unsigned', $datetime, null, 'expected unsigned tinyint, got DateTime'],
+            104=>['tinyint_unsigned', -1, null, 'out of range for unsigned tinyint'],
+            105=>['tinyint_unsigned', 1, 1, ''],
 
-            ['tinyint_signed', $datetime, null, 'expected signed tinyint, got DateTime'],
-            ['tinyint_signed', -1, -1, ''],
-            ['tinyint_signed', 1, 1, ''],
+            106=>['tinyint_signed', $datetime, null, 'expected signed tinyint, got DateTime'],
+            107=>['tinyint_signed', -1, -1, ''],
+            108=>['tinyint_signed', 1, 1, ''],
 
-            ['tinytext', $datetime, null, 'expected tinytext(255), got DateTime'],
-            ['tinytext', str_repeat('x', 256), null, 'too long for tinytext(255)'],
-            ['tinytext', 'foo', 'foo', ''],
+            109=>['tinytext', $datetime, null, 'expected tinytext(255), got DateTime'],
+            110=>['tinytext', str_repeat('x', 256), null, 'too long for tinytext(255)'],
+            111=>['tinytext', 'foo', 'foo', ''],
 
-            ['varbinary', $datetime, null, 'expected varbinary(8), got DateTime'],
-            ['varbinary', '123456789', null, 'too long for varbinary(8)'],
-            ['varbinary', '12345678', '12345678', ''],
+            112=>['varbinary', $datetime, null, 'expected varbinary(8), got DateTime'],
+            113=>['varbinary', '123456789', null, 'too long for varbinary(8)'],
+            114=>['varbinary', '12345678', '12345678', ''],
 
-            ['varchar', $datetime, null, 'expected varchar(8), got DateTime'],
+            115=>['varchar', $datetime, null, 'expected varchar(8), got DateTime'],
             ['varchar', '123456789', null, 'too long for varchar(8)'],
             ['varchar', '12345678', '12345678', ''],
 

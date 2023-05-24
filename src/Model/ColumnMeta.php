@@ -73,14 +73,14 @@ class ColumnMeta
                 'bigint', 'bit', 'tinyint', 'int', 'mediumint', 'smallint', 'year' => $this->toInt($value),
                 'varchar', 'binary', 'blob', 'char', 'longblob', 'mediumblob', 'longtext', 'mediumtext', 'text', 'tinyblob', 'tinytext', 'varbinary' => $this->toVarchar($value),
                 'date' => $this->toDate($value),
-                'datetime' => $this->toDateTime($value),
+                'datetime', 'timestamp' => $this->toDateTime($value),
                 'decimal' => $this->toDecimal($value),
                 'double' => $this->toDouble($value),
                 'enum' => $this->toEnum($value),
                 'float' => $this->toFloat($value),
                 'json' => $this->toJson($value),
                 'set' => $this->toSet($value),
-                'time', 'timestamp' => $this->toTime($value),
+                'time' => $this->toTime($value),
                 default => throw new RuntimeException(sprintf('unhandled column type %s', $this->data_type)),
             };
 
@@ -182,11 +182,19 @@ class ColumnMeta
     {
         $type = $this->data_type;
 
+        if (is_scalar($value)) {
+            try {
+                $value = new Date((string)$value);
+            } catch (Throwable) {
+                throw new OrmException(sprintf('could not convert to %s',$type));
+            }
+        }
+
         if (!$value instanceof Date) {
             throw new OrmException(sprintf('expected %s, got %s', $type, get_debug_type($value)));
         }
 
-        $this->guardInRange($value);
+        $value = $this->guardInRange($value);
 
         return $value;
     }
@@ -208,8 +216,7 @@ class ColumnMeta
         if (is_scalar($value)) {
             try {
                 $value = new DateTime((string)$value);
-            }
-            catch (Throwable ) {
+            } catch (Throwable) {
                 throw new OrmException('could not convert to DateTime');
             }
         }
@@ -243,10 +250,12 @@ class ColumnMeta
 
         $value = (string)$value;
 
+        $p = $this->precision - $this->scale;
+
         // Build the regex pattern based on the is_signed parameter, precision, and scale
         $pattern = $this->is_signed
-            ? "/^-?\d{1,$this->precision}(?:\.\d{1,$this->scale})?$/"
-            : "/^\d{1,$this->precision}(?:\.\d{1,$this->scale})?$/";
+            ? "/^-?\d{1,$p}(?:\.\d{1,$this->scale})?$/"
+            : "/^\d{1,$p}(?:\.\d{1,$this->scale})?$/";
 
         // Check if the value matches the regex pattern
         if (preg_match($pattern, $value) === 0) {
@@ -386,7 +395,7 @@ class ColumnMeta
         $type = $this->column_type;
 
         if (is_scalar($value)) {
-            $value = [(string)$value];
+            $value = explode(',', (string)$value);
         }
 
         if (!is_array($value)) {
@@ -408,26 +417,53 @@ class ColumnMeta
      *
      * @param mixed $value
      *
-     * @return DateTime
+     * @return string
+     *
      * @throws OrmException
      */
-    public function toTime(mixed $value): DateTime
+    public function toTime(mixed $value): string
     {
         $type = $this->data_type;
 
-        $tmp = $value;
-
-        if (is_scalar($value)) {
-            $tmp = DateTime::createFromFormat('H:i:s', (string)$value);
-        }
-
-        if (!$tmp instanceof DateTime) {
+        if (!is_scalar($value)) {
             throw new OrmException(sprintf('expected %s, got %s', $type, get_debug_type($value)));
         }
 
-        $this->guardInRange($value);
+        $value = (string)$value;
 
-        return $tmp;
+        if (!preg_match('/^(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d$/', $value)) {
+            throw new OrmException('invalid time format');
+        }
+
+        return $value;
+
+    }
+
+    /**
+     * @param mixed $value
+     *
+     * @return int|string|float|null
+     */
+    public function toSql(mixed $value): null|int|string|float
+    {
+        return match ($this->data_type) {
+            'int', 'tinyint', 'smallint', 'mediumint', 'bigint',
+            'varchar', 'char',
+            'binary', 'varbinary',
+            'decimal', 'double', 'float',
+            'enum',
+            'blob', 'tinyblob', 'mediumblob', 'longblob',
+            'text', 'tinytext', 'mediumtext', 'longtext',
+            'year',
+            => $value,
+            'time'=>(string)$value,
+            'bit' => $value ? chr(1): chr(0),
+            'datetime','timestamp' => $value->format('Y-m-d H:i:s'),
+            'date' => $value->format('Y-m-d'),
+            'json' => json_encode($value),
+            'set' => join(',', $value),
+            default => throw new RuntimeException('unhandled type ' . $this->data_type)
+        };
     }
 
 }
