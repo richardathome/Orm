@@ -18,7 +18,7 @@ class ModelFetchTest extends MySqlTestBase
     public function testFetchByWorks(): void
     {
 
-        $user = self::$Orm->Model('users')
+        $user = self::$orm->model('users')
             ->fetchBy(['id' => 1]);
 
         self::assertEquals(1, $user->get('id'));
@@ -34,9 +34,8 @@ class ModelFetchTest extends MySqlTestBase
 
         self::expectExceptionMessage('unknown column invalid-column in orm_test.users');
 
-        self::$Orm->Model('users')
+        self::$orm->model('users')
             ->fetchBy(['invalid-column' => 1]);
-
     }
 
     /**
@@ -48,7 +47,7 @@ class ModelFetchTest extends MySqlTestBase
     {
         self::expectExceptionMessage('orm_test.users record not found');
 
-        self::$Orm->Model('users')
+        self::$orm->model('users')
             ->fetchBy(['id' => 0]);
     }
 
@@ -58,17 +57,11 @@ class ModelFetchTest extends MySqlTestBase
      */
     public function testFetchByPkWorksForSimplePk(): void
     {
-        $user = self::$Orm->Model('users')
+        $user = self::$orm->model('users')
             ->fetchByPk(1);
 
         self::assertEquals(['id'=>1], $user->getPk());
     }
-
-
-
-
-
-
 
     /**
      * @return void
@@ -77,23 +70,24 @@ class ModelFetchTest extends MySqlTestBase
      */
     public function testFetchChildrenWorks(): void
     {
-        $user = self::$Orm->Model('users')->fetchByPk(1);
+        $user = self::$orm->model('users')->fetchByPk(1);
 
         $posts = $user->fetchChildren('posts', ['id <=' => 2]);
 
         self::assertCount(2, $posts);
     }
 
-
     /**
      * @return void
-     * 
+     *
      * @throws OrmException
      */
-    public function testFetchChildrenFailsWithNoPk(): void {
+    public function testFetchChildrenFailsWithNoPk(): void
+    {
         self::expectExceptionMessage('primary key not set');
-        self::$Orm->Model('users')->fetchChildren('posts');
+        self::$orm->model('users')->fetchChildren('posts');
     }
+
     /**
      * @return void
      *
@@ -101,7 +95,7 @@ class ModelFetchTest extends MySqlTestBase
      */
     public function testFetchChildrenFailsForInvalidChildTableName(): void
     {
-        $user = self::$Orm->Model('users')->fetchByPk(1);
+        $user = self::$orm->model('users')->fetchByPk(1);
 
         self::expectExceptionMessage('invalid-child-table is not a child of orm_test.users');
 

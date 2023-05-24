@@ -19,17 +19,16 @@ class QueryTest extends MySqlTestBase
      */
     public function testIteratorWorks(): void
     {
-        $posts = self::$Orm->Query('posts', [
+        $posts = self::$orm->query('posts', [
             'id <=' => 2
         ]);
 
         self::assertCount(2, $posts);
 
-        foreach($posts as $key=>$post) {
+        foreach ($posts as $key => $post) {
             self::assertIsInt($key);
             self::assertNotEmpty($post->get('title'));
         }
-
     }
 
     /**
@@ -38,12 +37,11 @@ class QueryTest extends MySqlTestBase
      */
     public function testInClauseWorksWithArray(): void
     {
-        $posts = self::$Orm->Query('posts', [
+        $posts = self::$orm->query('posts', [
             'id IN' => [1,2]
         ]);
 
         self::assertEquals(2, $posts->count());
-
     }
 
     /**
@@ -52,12 +50,10 @@ class QueryTest extends MySqlTestBase
      */
     public function testInClauseWorksWithScalar(): void
     {
-        $posts = self::$Orm->Query('posts', [
+        $posts = self::$orm->query('posts', [
             'id IN' => 1
         ]);
 
         self::assertEquals(1, $posts->count());
-
     }
-
 }

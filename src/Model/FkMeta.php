@@ -19,7 +19,6 @@ class FkMeta
         public readonly string $referenced_database_name,
         public readonly string $referenced_table_name,
         public readonly string $referenced_column_name
-    )
-    {
+    ) {
     }
 }

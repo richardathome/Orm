@@ -18,7 +18,8 @@ class MySqlDriverTest extends TestCase
      * @return void
      * @throws OrmException
      */
-    public function testConstructorFailsWithNonMySqlPdo(): void {
+    public function testConstructorFailsWithNonMySqlPdo(): void
+    {
         self::expectExceptionMessage('expected mysql pdo, got sqlite');
 
         new MySqlDriver(new PDO('sqlite:memory'));

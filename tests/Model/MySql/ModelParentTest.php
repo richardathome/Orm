@@ -31,7 +31,7 @@ class ModelParentTest extends MySqlTestBase
             self::expectExceptionMessage($expected_error);
         }
 
-        $post = self::$Orm->Model('posts')
+        $post = self::$orm->model('posts')
             ->set([
                 'title' => uniqid('title', true),
                 'author_id' => $value
@@ -62,7 +62,7 @@ class ModelParentTest extends MySqlTestBase
             'password' => 'password'
         ];
 
-        $valid_model = self::$Orm->Model('users')->set($valid_values);
+        $valid_model = self::$orm->model('users')->set($valid_values);
 
         return [
             [1, 'int', ''],
@@ -81,7 +81,7 @@ class ModelParentTest extends MySqlTestBase
      */
     public function testFetchParentFailsForInvalidParent(): void
     {
-        $post = self::$Orm->Model('posts')->fetchByPk(1);
+        $post = self::$orm->model('posts')->fetchByPk(1);
 
         self::expectExceptionMessage('orm_test.posts.title is not a foreign key column');
 
@@ -94,7 +94,7 @@ class ModelParentTest extends MySqlTestBase
      */
     public function testFetchParentWorks(): void
     {
-        $post = self::$Orm->Model('posts')->fetchByPk(1);
+        $post = self::$orm->model('posts')->fetchByPk(1);
         $user = $post->fetchParent('author_id');
 
         self::assertEquals(1, $user->get('id'));
@@ -106,8 +106,9 @@ class ModelParentTest extends MySqlTestBase
      *
      * @throws OrmException
      */
-    public function testFetchParentFailsIfFkIsNull(): void {
-        $post = self::$Orm->Model('posts');
+    public function testFetchParentFailsIfFkIsNull(): void
+    {
+        $post = self::$orm->model('posts');
 
         self::expectExceptionMessage('orm_test.posts.author_id is null');
         $post->fetchParent('author_id');
@@ -119,7 +120,7 @@ class ModelParentTest extends MySqlTestBase
      */
     public function testSaveWithParentValue(): void
     {
-        $post = self::$Orm->Model('posts')->set([
+        $post = self::$orm->model('posts')->set([
             'title' => uniqid('title', true),
             'author_id' => 1
         ])
@@ -140,7 +141,7 @@ class ModelParentTest extends MySqlTestBase
             'password' => 'password'
         ];
 
-        $post = self::$Orm->Model('posts')->set([
+        $post = self::$orm->model('posts')->set([
             'title' => uniqid('title', true),
             'author_id' => $author
         ]);
@@ -163,12 +164,12 @@ class ModelParentTest extends MySqlTestBase
      */
     public function testSaveWithParentModelCreatesParentAndForeignKey(): void
     {
-        $author = self::$Orm->Model('users')->set([
+        $author = self::$orm->model('users')->set([
             'name' => uniqid('name', true),
             'password' => 'password'
         ]);
 
-        $post = self::$Orm->Model('posts')->set([
+        $post = self::$orm->model('posts')->set([
             'title' => uniqid('title', true),
             'author_id' => $author
         ])
@@ -192,15 +193,11 @@ class ModelParentTest extends MySqlTestBase
     public function testSetParentFailsForInvalidParentModel(): void
     {
 
-        $comment = self::$Orm->Model('comments');
+        $comment = self::$orm->model('comments');
 
         self::expectExceptionMessage('orm_test.posts.author_id: expected users, got comments');
 
-        self::$Orm->Model('posts')
+        self::$orm->model('posts')
             ->set('author_id', $comment);
-
     }
-
-
-
 }

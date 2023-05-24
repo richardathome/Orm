@@ -19,7 +19,6 @@ class ModelTest extends MySqlTestBase
     {
         self::expectExceptionMessage('table invalid-table not found in orm_test');
 
-        self::$Orm->Model('invalid-table');
+        self::$orm->model('invalid-table');
     }
-
 }

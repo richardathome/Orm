@@ -14,7 +14,7 @@ use Richbuilds\Orm\OrmException;
  */
 class SqliteTestBase extends TestCase
 {
-    protected static Orm $Orm;
+    protected static Orm $orm;
 
     /**
      * This method is called before the first test of this test class is run.
@@ -24,7 +24,6 @@ class SqliteTestBase extends TestCase
     public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
-        self::$Orm = new Orm(new PDO('sqlite:orm_test'));
+        self::$orm = new Orm(new PDO('sqlite:orm_test'));
     }
-
 }

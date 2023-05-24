@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
 
-
 namespace Richbuilds\Orm\Model;
 
 use Richbuilds\Orm\Driver\Driver;
@@ -26,8 +25,7 @@ class Values
     public function __construct(
         private readonly Driver    $Driver,
         private readonly TableMeta $TableMeta
-    )
-    {
+    ) {
     }
 
 
@@ -76,7 +74,7 @@ class Values
      *
      * @throws OrmException
      */
-    public function set(array|string $column_name, mixed $value=null): self
+    public function set(array|string $column_name, mixed $value = null): self
     {
         if (is_array($column_name)) {
             return $this->setMany($column_name);
@@ -87,7 +85,6 @@ class Values
         }
 
         if (isset($this->TableMeta->ParentMeta[$column_name])) {
-
             if (is_array($value)) {
                 return $this->setParentArray($column_name, $value);
             }
@@ -122,18 +119,15 @@ class Values
         $original_value = $this->values;
 
         try {
-
             foreach ($values as $k => $v) {
                 $this->set($k, $v);
             }
 
             return $this;
-
         } catch (OrmException $e) {
             $this->values = $original_value;
             throw ($e);
         }
-
     }
 
 
@@ -162,7 +156,6 @@ class Values
         $this->TableMeta->guardHasChild($children_table_name);
 
         foreach ($children as $key => $child_values) {
-
             if ($child_values instanceof Model) {
                 $model = $child_values;
             } else {
@@ -170,14 +163,14 @@ class Values
                 $model->set($child_values);
             }
 
-            if ($children_table_name !== $model->TableMeta->table_name) {
+            if ($children_table_name !== $model->tableMeta->table_name) {
                 throw new OrmException(sprintf(
                     '%s.%s.%s: expected %s got %s',
                     $this->TableMeta->database_name,
                     $this->TableMeta->table_name,
                     $children_table_name,
                     $children_table_name,
-                    $model->TableMeta->table_name
+                    $model->tableMeta->table_name
                 ));
             }
 
@@ -227,14 +220,16 @@ class Values
     {
         $this->TableMeta->guardIsForeignKey($parent_column_name);
 
-        if ($this->TableMeta->ParentMeta[$parent_column_name]->referenced_table_name !== $parent_model->TableMeta->table_name) {
+        $referenced_table_name = $this->TableMeta->ParentMeta[$parent_column_name]->referenced_table_name;
+
+        if ($referenced_table_name !== $parent_model->tableMeta->table_name) {
             throw new OrmException(sprintf(
                 '%s.%s.%s: expected %s, got %s',
                 $this->TableMeta->database_name,
                 $this->TableMeta->table_name,
                 $parent_column_name,
-                $this->TableMeta->ParentMeta[$parent_column_name]->referenced_table_name,
-                $parent_model->TableMeta->table_name
+                $referenced_table_name,
+                $parent_model->tableMeta->table_name
             ));
         }
 
@@ -267,7 +262,13 @@ class Values
             try {
                 (new Model($this->Driver, $parent_fk->referenced_table_name))->fetchByPk($value);
             } catch (OrmException $e) {
-                throw new OrmException(sprintf('%s.%s.%s: %s', $this->TableMeta->database_name, $this->TableMeta->table_name, $column_name, $e->getMessage()));
+                throw new OrmException(sprintf(
+                    '%s.%s.%s: %s',
+                    $this->TableMeta->database_name,
+                    $this->TableMeta->table_name,
+                    $column_name,
+                    $e->getMessage()
+                ));
             }
         }
 
@@ -322,5 +323,4 @@ class Values
 
         return $this;
     }
-
 }

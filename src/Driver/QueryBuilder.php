@@ -74,9 +74,22 @@ abstract class QueryBuilder
                     $placeholder = ':' . $column_name . '_value_' . $index;
                     $placeholders[] = $placeholder;
                 }
-                $where .= sprintf('`%s`.`%s`.`%s` IN (%s) AND ', $table_meta->database_name, $table_meta->table_name, $column_name, implode(', ', $placeholders));
+                $where .= sprintf(
+                    '`%s`.`%s`.`%s` IN (%s) AND ',
+                    $table_meta->database_name,
+                    $table_meta->table_name,
+                    $column_name,
+                    implode(', ', $placeholders)
+                );
             } else {
-                $where .= sprintf('`%s`.`%s`.`%s` %s :%s AND ', $table_meta->database_name, $table_meta->table_name, $column_name, $comparator, $column_name);
+                $where .= sprintf(
+                    '`%s`.`%s`.`%s` %s :%s AND ',
+                    $table_meta->database_name,
+                    $table_meta->table_name,
+                    $column_name,
+                    $comparator,
+                    $column_name
+                );
             }
         }
 

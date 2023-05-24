@@ -18,9 +18,9 @@ class Orm
     /**
      * Driver responsible for interacting with the database
      *
-     * @var Driver $Driver
+     * @var Driver $driver
      */
-    public readonly Driver $Driver;
+    public readonly Driver $driver;
 
     /**
      * @param PDO $pdo
@@ -29,14 +29,13 @@ class Orm
      */
     public function __construct(
         public readonly PDO $pdo
-    )
-    {
-        $this->pdo->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
+    ) {
+        $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $this->pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
 
         $driver_name = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
 
-        $this->Driver = match ($driver_name) {
+        $this->driver = match ($driver_name) {
             'mysql' => new MySqlDriver($this->pdo),
             default => throw new OrmException(sprintf('unhandled driver %s', $driver_name)),
         };
@@ -52,9 +51,9 @@ class Orm
      *
      * @throws OrmException
      */
-    public function Model(string $table_name): Model
+    public function model(string $table_name): Model
     {
-        return new Model($this->Driver, $table_name);
+        return new Model($this->driver, $table_name);
     }
 
 
@@ -69,8 +68,8 @@ class Orm
      *
      * @throws OrmException
      */
-    public function Query(string $table_name, array $conditions = [], array $pagination = []): Query
+    public function query(string $table_name, array $conditions = [], array $pagination = []): Query
     {
-        return new Query($this->Driver, $table_name, $conditions, $pagination);
+        return new Query($this->driver, $table_name, $conditions, $pagination);
     }
 }

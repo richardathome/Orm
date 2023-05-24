@@ -3,8 +3,6 @@ declare(strict_types=1);
 
 namespace Richbuilds\Orm\Tests\Model\MySql;
 
-use Richbuilds\Orm\Model\Model;
-use PHPUnit\Framework\TestCase;
 use Richbuilds\Orm\OrmException;
 
 /**
@@ -20,7 +18,7 @@ class ModelCompositePkTest extends MySqlTestBase
      */
     public function testGetCompositePk(): void
     {
-        $order = self::$Orm->Model('orders')->set([
+        $order = self::$orm->model('orders')->set([
             'order_id' => 1,
             'customer_id' => 1
         ]);
@@ -34,7 +32,7 @@ class ModelCompositePkTest extends MySqlTestBase
      */
     public function testFetchByPkWorksForCompositePk(): void
     {
-        $user = self::$Orm->Model('orders')
+        $user = self::$orm->model('orders')
             ->fetchByPk(['order_id' => 1, 'customer_id' => 1]);
 
         self::assertEquals(['order_id' => 1, 'customer_id' => 1], $user->getPk());
@@ -46,7 +44,7 @@ class ModelCompositePkTest extends MySqlTestBase
      */
     public function testGetPkWorksForCompositePk(): void
     {
-        $model = self::$Orm->Model('composite_pk')->set([
+        $model = self::$orm->model('composite_pk')->set([
             'f1' => 1,
             'f2' => 2
         ]);
@@ -63,7 +61,7 @@ class ModelCompositePkTest extends MySqlTestBase
     {
         self::expectExceptionMessage('missing pk column f1');
 
-        self::$Orm->Model('composite_pk')->fetchByPk(['foo' => 'bar']);
+        self::$orm->model('composite_pk')->fetchByPk(['foo' => 'bar']);
     }
 
     /**
@@ -75,8 +73,7 @@ class ModelCompositePkTest extends MySqlTestBase
     {
         self::expectExceptionMessage('orm_test.composite_pk: array expected');
 
-        self::$Orm->Model('composite_pk')
+        self::$orm->model('composite_pk')
             ->fetchByPk(1);
     }
-
 }

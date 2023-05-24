@@ -21,7 +21,7 @@ use RuntimeException;
  */
 class Query implements Iterator, Countable
 {
-    public readonly TableMeta $TableMeta;
+    public readonly TableMeta $tableMeta;
 
     /**
      * @var PDOStatement|null The PDO statement to be iterated
@@ -51,9 +51,8 @@ class Query implements Iterator, Countable
         string                 $table_name,
         public readonly array  $conditions = [],
         public readonly array  $pagination = [],
-    )
-    {
-        $this->TableMeta = $this->Driver->fetchTableMeta($table_name);
+    ) {
+        $this->tableMeta = $this->Driver->fetchTableMeta($table_name);
     }
 
     /**
@@ -128,7 +127,7 @@ class Query implements Iterator, Countable
             return null;
         }
 
-        $model = new Model($this->Driver, $this->TableMeta->table_name);
+        $model = new Model($this->Driver, $this->tableMeta->table_name);
         $model->set($row);
 
         return $model;
@@ -148,14 +147,20 @@ class Query implements Iterator, Countable
 
     /**
      * @return void
+     *
      */
     private function reset(): void
     {
-        $this->statement = $this->Driver->fetchQueryIteratorStmt($this->TableMeta, $this->conditions, $this->pagination);
+        $this->statement = $this->Driver->fetchQueryIteratorStmt(
+            $this->tableMeta,
+            $this->conditions,
+            $this->pagination
+        );
     }
 
     /**
      * @return PDOStatement
+     *
      */
     private function guardNullStatement(): PDOStatement
     {

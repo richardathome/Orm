@@ -17,7 +17,7 @@ class ModelSimplePkTest extends MySqlTestBase
      */
     public function testGetPkWorksForSimplePk(): void
     {
-        $model = self::$Orm->Model('users');
+        $model = self::$orm->model('users');
 
         self::assertEquals(['id'=>null], $model->getPk());
     }
@@ -32,9 +32,6 @@ class ModelSimplePkTest extends MySqlTestBase
     {
         self::expectExceptionMessage('orm_test.no_pk has no primary key');
 
-        self::$Orm->Model('no_pk')->fetchByPk(1);
+        self::$orm->model('no_pk')->fetchByPk(1);
     }
-
-
-
 }

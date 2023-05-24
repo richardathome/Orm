@@ -16,11 +16,12 @@ class ModelDeleteTest extends MySqlTestBase
      *
      * @throws OrmException
      */
-    public function testDeleteWorks(): void {
+    public function testDeleteWorks(): void
+    {
 
-        $model = self::$Orm->Model('users')
+        $model = self::$orm->model('users')
             ->set([
-                'name'=>uniqid('name',true),
+                'name'=>uniqid('name', true),
                 'password'=>'password',
             ])
             ->save();
@@ -29,7 +30,7 @@ class ModelDeleteTest extends MySqlTestBase
 
         self::expectExceptionMessage('orm_test.users record not found');
 
-        self::$Orm->Model('users')->fetchBy($model->getPk());
+        self::$orm->model('users')->fetchBy($model->getPk());
     }
 
     /**
@@ -37,14 +38,15 @@ class ModelDeleteTest extends MySqlTestBase
      *
      * @throws OrmException
      */
-    public function testDeleteFailsWithDependencies(): void {
+    public function testDeleteFailsWithDependencies(): void
+    {
 
-        $model = self::$Orm->Model('users')
+        $model = self::$orm->model('users')
             ->set([
-                'name'=>uniqid('name',true),
+                'name'=>uniqid('name', true),
                 'password'=>'password',
                 'posts'=>[
-                    ['title'=>uniqid('title',true)]
+                    ['title'=>uniqid('title', true)]
                 ]
             ])
             ->save();
@@ -52,7 +54,6 @@ class ModelDeleteTest extends MySqlTestBase
         self::expectExceptionMessage('Integrity constraint violation');
 
         $model->delete();
-
     }
 
 
@@ -61,11 +62,11 @@ class ModelDeleteTest extends MySqlTestBase
      *
      * @throws OrmException
      */
-    public function testDeleteFailsWithNoPk(): void {
+    public function testDeleteFailsWithNoPk(): void
+    {
 
         self::expectExceptionMessage('primary key not set');
 
-        self::$Orm->Model('users')->delete();
+        self::$orm->model('users')->delete();
     }
-
 }

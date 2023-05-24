@@ -29,5 +29,4 @@ class Date extends DateTime
         // Display the date in the 'Y-m-d' format
         return $this->format('Y-m-d');
     }
-
 }

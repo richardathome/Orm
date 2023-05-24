@@ -24,5 +24,4 @@ class OrmTest extends TestCase
 
         new Orm(new PDO('pgsql:host=localhost;port=5432;dbname=orm_test', 'test', 'test'));
     }
-
 }

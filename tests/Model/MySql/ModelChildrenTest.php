@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Richbuilds\Orm\Tests\Model\MySql;
 
-
 use Richbuilds\Orm\OrmException;
 
 /**
@@ -28,7 +27,7 @@ class ModelChildrenTest extends MySqlTestBase
             ]
         ];
 
-        $author = self::$Orm->Model('users')->set([
+        $author = self::$orm->model('users')->set([
             'name' => uniqid('name', true),
             'password' => 'password',
             'posts' => $posts
@@ -46,7 +45,7 @@ class ModelChildrenTest extends MySqlTestBase
     {
         self::expectExceptionMessage('orm_test.users.posts: expected array got int');
 
-        self::$Orm->Model('users')
+        self::$orm->model('users')
             ->set('posts', 1);
     }
 
@@ -60,9 +59,8 @@ class ModelChildrenTest extends MySqlTestBase
     {
         self::expectExceptionMessage('orm_test.posts.comments: expected comments got users');
 
-        self::$Orm->Model('posts')->set('comments', [
-            self::$Orm->Model('users')
+        self::$orm->model('posts')->set('comments', [
+            self::$orm->model('users')
         ]);
     }
-
 }

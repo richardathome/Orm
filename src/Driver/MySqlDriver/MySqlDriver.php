@@ -18,14 +18,14 @@ use RuntimeException;
  */
 class MySqlDriver extends Driver
 {
-    private string $database_name;
+    private string $databaseName;
 
     /**
      * In request storage of any table metadata fetched
      *
-     * @var array<string,array<string,TableMeta>> $table_meta_cache
+     * @var array<string,array<string,TableMeta>> $tableMetaCache
      */
-    private mixed $table_meta_cache = [];
+    private mixed $tableMetaCache = [];
 
 
     /**
@@ -35,18 +35,16 @@ class MySqlDriver extends Driver
      */
     public function __construct(
         PDO $pdo
-    )
-    {
+    ) {
         $this->guardValidDriver($pdo, 'mysql');
 
         parent::__construct($pdo, new MySqlQueryBuilder());
 
-        $this->database_name = (string)$this->fetchSqlColumn($this->QueryBuilder->buildFetchDatabaseName());
+        $this->databaseName = (string)$this->fetchSqlColumn($this->QueryBuilder->buildFetchDatabaseName());
 
-        if (empty($this->database_name)) {
+        if (empty($this->databaseName)) {
             throw new OrmException('no database selected');
         }
-
     }
 
 
@@ -55,9 +53,9 @@ class MySqlDriver extends Driver
      */
     public function fetchTableMeta(string $table_name): TableMeta
     {
-        $database_name = $this->database_name;
+        $database_name = $this->databaseName;
 
-        if (!isset($this->table_meta_cache[$database_name][$table_name])) {
+        if (!isset($this->tableMetaCache[$database_name][$table_name])) {
             $sql = $this->QueryBuilder->buildFetchTableMeta();
             $rows = $this->fetchSqlAll($sql, [
                 'database_name' => $database_name,
@@ -65,7 +63,7 @@ class MySqlDriver extends Driver
             ]);
 
             if (empty($rows)) {
-                throw new OrmException(sprintf('table %s not found in %s', $table_name, $this->database_name));
+                throw new OrmException(sprintf('table %s not found in %s', $table_name, $this->databaseName));
             }
 
             /**
@@ -89,11 +87,9 @@ class MySqlDriver extends Driver
             $children = [];
 
             foreach ($rows as $column_meta) {
-
                 $column_name = (string)$column_meta['column_name'];
 
                 if (!isset($column_metas[$column_name])) {
-
                     if ($column_meta['column_key'] === 'PRI') {
                         $pk_columns[] = $column_name;
                     }
@@ -125,7 +121,6 @@ class MySqlDriver extends Driver
                         $max_value,
                         $options
                     );
-
                 }
 
                 if ($column_meta['referenced_database'] !== null) {
@@ -144,10 +139,9 @@ class MySqlDriver extends Driver
                         $column_meta['referring_column']
                     );
                 }
-
             }
 
-            $this->table_meta_cache[$database_name][$table_name] = new TableMeta(
+            $this->tableMetaCache[$database_name][$table_name] = new TableMeta(
                 $database_name,
                 $table_name,
                 $column_metas,
@@ -155,10 +149,9 @@ class MySqlDriver extends Driver
                 $parents,
                 $children
             );
-
         }
 
-        return $this->table_meta_cache[$database_name][$table_name];
+        return $this->tableMetaCache[$database_name][$table_name];
     }
 
 
@@ -257,7 +250,11 @@ class MySqlDriver extends Driver
         // Check if the provided signed and data type combination is supported
         if (!isset($max_values[$is_signed][$data_type])) {
             // @codeCoverageIgnoreStart
-            throw new RuntimeException(sprintf('MySqlDriver::getMinValue(): unhandled data type: %s %s', $is_signed ? 'signed' : 'unsigned', $data_type));
+            throw new RuntimeException(sprintf(
+                'MySqlDriver::getMinValue(): unhandled data type: %s %s',
+                $is_signed ? 'signed' : 'unsigned',
+                $data_type
+            ));
             // @codeCoverageIgnoreEnd
         }
 

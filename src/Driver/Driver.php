@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Richbuilds\Orm\Driver;
 
-use DateTime;
-use Richbuilds\Orm\Model\Date;
 use RuntimeException;
 use PDO;
 use PDOStatement;
@@ -24,8 +22,7 @@ abstract class Driver
     public function __construct(
         public readonly PDO          $pdo,
         public readonly QueryBuilder $QueryBuilder
-    )
-    {
+    ) {
     }
 
 
@@ -91,7 +88,6 @@ abstract class Driver
         if ($driver_name !== $expected_driver_name) {
             throw new OrmException(sprintf('expected %s pdo, got %s', $expected_driver_name, $driver_name));
         }
-
     }
 
 
@@ -103,9 +99,13 @@ abstract class Driver
      * @param array<string,mixed> $pagination
      *
      * @return PDOStatement
+     *
      */
-    public function fetchQueryIteratorStmt(TableMeta $table_meta, array $conditions = [], array $pagination = []): PDOStatement
-    {
+    public function fetchQueryIteratorStmt(
+        TableMeta $table_meta,
+        array     $conditions = [],
+        array     $pagination = []
+    ): PDOStatement {
         $sql = $this->QueryBuilder->buildFetchAll($table_meta, $conditions, $pagination);
 
         return $this->prepareAndExec($sql, $conditions);
@@ -120,6 +120,7 @@ abstract class Driver
      * @param array<string,mixed> $conditions
      *
      * @return array<string,mixed>|false
+     *
      */
     public function fetchFirstBy(TableMeta $table_meta, array $conditions): array|false
     {
@@ -138,8 +139,6 @@ abstract class Driver
      * @param array<string,mixed> $parameters
      *
      * @return PDOStatement
-     *
-     * @throws OrmException
      */
     protected function prepareAndExec(string $sql, array $parameters = []): PDOStatement
     {
@@ -147,7 +146,6 @@ abstract class Driver
 
         // bind the params
         foreach ($parameters as $name => $value) {
-
             $comparator = '=';
 
             if (str_contains($name, ' ')) {
@@ -155,17 +153,14 @@ abstract class Driver
             }
 
             if ($comparator === 'IN') {
-
                 $value = is_array($value) ? $value : [$value];
 
                 foreach ($value as $k => $v) {
                     $stmt->bindValue(':' . $name . '_value_' . $k, $v);
                 }
-
             } else {
                 $stmt->bindValue(':' . $name, $value);
             }
-
         }
 
         $stmt->execute();
@@ -182,7 +177,6 @@ abstract class Driver
      *
      * @return mixed
      *
-     * @throws OrmException
      */
     protected function fetchSqlColumn(string $sql, array $parameters = []): mixed
     {
@@ -253,5 +247,4 @@ abstract class Driver
 
         $this->pdo->rollBack();
     }
-
 }

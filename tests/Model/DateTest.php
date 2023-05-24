@@ -19,10 +19,12 @@ class DateTest extends TestCase
      */
     public function testConstructWithValidDate(): void
     {
-        $validDate = '2023-05-18';
-        $date = new Date($validDate);
+        $valid_date = '2023-05-18';
+        $date = new Date($valid_date);
+
         self::assertInstanceOf(Date::class, $date);
-        self::assertEquals($validDate, $date->format('Y-m-d'));
+
+        self::assertEquals($valid_date, $date->format('Y-m-d'));
     }
 
     /**
@@ -31,12 +33,12 @@ class DateTest extends TestCase
      */
     public function testConstructWithInvalidDate(): void
     {
-        $invalidDate = 'invalid-date';
+        $invalid_date = 'invalid-date';
 
         self::expectException(Exception::class);
-        self::expectExceptionMessage("Failed to parse time string ($invalidDate) at position 0");
+        self::expectExceptionMessage("Failed to parse time string ($invalid_date) at position 0");
 
-        new Date($invalidDate);
+        new Date($invalid_date);
     }
 
     /**
@@ -45,8 +47,9 @@ class DateTest extends TestCase
      */
     public function testToString(): void
     {
-        $validDate = '2023-05-18';
-        $date = new Date($validDate);
-        self::assertEquals($validDate, (string)$date);
+        $valid_date = '2023-05-18';
+        $date = new Date($valid_date);
+
+        self::assertEquals($valid_date, (string)$date);
     }
 }

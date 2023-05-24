@@ -21,7 +21,7 @@ class ModelSaveTest extends MySqlTestBase
 
         $name = uniqid('name', true);
 
-        $user = self::$Orm->Model('users')
+        $user = self::$orm->model('users')
             ->set([
                 'name' => $name,
                 'password' => 'foo'
@@ -31,7 +31,7 @@ class ModelSaveTest extends MySqlTestBase
 
         self::assertNotNull($user->getPk());
 
-        $reload = self::$Orm->Model('users')
+        $reload = self::$orm->model('users')
             ->fetchByPk($user->getPk());
 
         self::assertEquals($user, $reload);
@@ -45,11 +45,11 @@ class ModelSaveTest extends MySqlTestBase
     public function testSaveChildrenWorks(): void
     {
 
-        $author = self::$Orm->Model('users')->set([
+        $author = self::$orm->model('users')->set([
             'name' => uniqid('name', true),
             'password' => 'password',
             'posts' => [
-                self::$Orm->Model('posts')->set('title', uniqid('title', true)),
+                self::$orm->model('posts')->set('title', uniqid('title', true)),
                 ['title' => uniqid('title')],
             ]
         ]);
@@ -72,7 +72,7 @@ class ModelSaveTest extends MySqlTestBase
 
         $original = uniqid('name', true);
 
-        $user = self::$Orm->Model('users')
+        $user = self::$orm->model('users')
             ->set('name', $original)
             ->set('password', 'password')
             ->save();
@@ -89,9 +89,8 @@ class ModelSaveTest extends MySqlTestBase
     /**
      * @return void
      */
-    public function testSaveRollsBackOnError(): void {
-
+    public function testSaveRollsBackOnError(): void
+    {
         self::markTestIncomplete();
-
     }
 }

@@ -43,8 +43,7 @@ class ColumnMeta
         public mixed           $min_value,
         public mixed           $max_value,
         public array           $options
-    )
-    {
+    ) {
     }
 
     /**
@@ -59,9 +58,7 @@ class ColumnMeta
     public function toPhp(mixed $value): mixed
     {
         try {
-
             if ($value === null) {
-
                 if (!$this->allow_null) {
                     throw new OrmException('cannot be null');
                 }
@@ -70,8 +67,14 @@ class ColumnMeta
             }
 
             $value = match ($this->data_type) {
-                'bigint', 'bit', 'tinyint', 'int', 'mediumint', 'smallint', 'year' => $this->toInt($value),
-                'varchar', 'binary', 'blob', 'char', 'longblob', 'mediumblob', 'longtext', 'mediumtext', 'text', 'tinyblob', 'tinytext', 'varbinary' => $this->toVarchar($value),
+                'int', 'tinyint', 'smallint', 'mediumint', 'bigint',
+                'bit', 'year'
+                => $this->toInt($value),
+                'char', 'varchar',
+                'blob', 'tinyblob', 'mediumblob', 'longblob',
+                'longtext', 'mediumtext', 'text', 'tinytext',
+                'binary', 'varbinary'
+                => $this->toVarchar($value),
                 'date' => $this->toDate($value),
                 'datetime', 'timestamp' => $this->toDateTime($value),
                 'decimal' => $this->toDecimal($value),
@@ -81,13 +84,21 @@ class ColumnMeta
                 'json' => $this->toJson($value),
                 'set' => $this->toSet($value),
                 'time' => $this->toTime($value),
-                default => throw new RuntimeException(sprintf('unhandled column type %s', $this->data_type)),
+                default => throw new RuntimeException(sprintf(
+                    'unhandled column type %s',
+                    $this->data_type
+                )),
             };
 
             return $value;
-
         } catch (OrmException $e) {
-            throw new OrmException(sprintf('%s.%s.%s: %s', $this->database_name, $this->table_name, $this->column_name, $e->getMessage()));
+            throw new OrmException(sprintf(
+                '%s.%s.%s: %s',
+                $this->database_name,
+                $this->table_name,
+                $this->column_name,
+                $e->getMessage()
+            ));
         }
     }
 
@@ -186,7 +197,7 @@ class ColumnMeta
             try {
                 $value = new Date((string)$value);
             } catch (Throwable) {
-                throw new OrmException(sprintf('could not convert to %s',$type));
+                throw new OrmException(sprintf('could not convert to %s', $type));
             }
         }
 
@@ -242,7 +253,13 @@ class ColumnMeta
      */
     public function toDecimal(mixed $value): string
     {
-        $type = sprintf('%s %s(%s,%s)', $this->is_signed ? 'signed' : 'unsigned', $this->data_type, $this->precision, $this->scale);
+        $type = sprintf(
+            '%s %s(%s,%s)',
+            $this->is_signed ? 'signed' : 'unsigned',
+            $this->data_type,
+            $this->precision,
+            $this->scale
+        );
 
         if (!is_scalar($value)) {
             throw new OrmException(sprintf('expected %s, got %s', $type, get_debug_type($value)));
@@ -277,7 +294,13 @@ class ColumnMeta
      */
     public function toDouble(mixed $value): string
     {
-        $type = sprintf('%s %s(%s,%s)', $this->is_signed ? 'signed' : 'unsigned', $this->data_type, $this->precision, $this->scale);
+        $type = sprintf(
+            '%s %s(%s,%s)',
+            $this->is_signed ? 'signed' : 'unsigned',
+            $this->data_type,
+            $this->precision,
+            $this->scale
+        );
 
         if (!is_numeric($value)) {
             throw new OrmException(sprintf('expected %s, got %s', $type, get_debug_type($value)));
@@ -335,7 +358,13 @@ class ColumnMeta
      */
     public function toFloat(mixed $value): float
     {
-        $type = sprintf('%s %s(%s,%s)', $this->is_signed ? 'signed' : 'unsigned', $this->data_type, $this->precision, $this->scale);
+        $type = sprintf(
+            '%s %s(%s,%s)',
+            $this->is_signed ? 'signed' : 'unsigned',
+            $this->data_type,
+            $this->precision,
+            $this->scale
+        );
 
         if (!is_numeric($value)) {
             throw new OrmException(sprintf('expected %s, got %s', $type, get_debug_type($value)));
@@ -436,7 +465,6 @@ class ColumnMeta
         }
 
         return $value;
-
     }
 
     /**
@@ -456,14 +484,13 @@ class ColumnMeta
             'text', 'tinytext', 'mediumtext', 'longtext',
             'year',
             => $value,
-            'time'=>(string)$value,
-            'bit' => $value ? chr(1): chr(0),
-            'datetime','timestamp' => $value->format('Y-m-d H:i:s'),
+            'time' => (string)$value,
+            'bit' => $value ? chr(1) : chr(0),
+            'datetime', 'timestamp' => $value->format('Y-m-d H:i:s'),
             'date' => $value->format('Y-m-d'),
             'json' => json_encode($value),
             'set' => join(',', $value),
             default => throw new RuntimeException('unhandled type ' . $this->data_type)
         };
     }
-
 }

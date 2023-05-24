@@ -26,8 +26,7 @@ class TableMeta
         public array           $pk_columns,
         public array           $ParentMeta,
         public array           $ChildrenMeta
-    )
-    {
+    ) {
     }
 
     /**
@@ -49,7 +48,11 @@ class TableMeta
         $columns = array_merge(array_keys($this->ColumnMeta), array_keys($this->ChildrenMeta));
 
         if (!in_array($column_name, $columns)) {
-            throw new OrmException(sprintf('unknown column %s in %s.%s', $column_name, $this->database_name, $this->table_name));
+            throw new OrmException(sprintf(
+                'unknown column %s in %s.%s',
+                $column_name, $this->database_name,
+                $this->table_name
+            ));
         }
     }
 
@@ -96,7 +99,12 @@ class TableMeta
     public function guardHasChild(string $child_table_name): void
     {
         if (!isset($this->ChildrenMeta[$child_table_name])) {
-            throw new OrmException(sprintf('%s is not a child of %s.%s', $child_table_name, $this->database_name, $this->table_name));
+            throw new OrmException(sprintf(
+                '%s is not a child of %s.%s',
+                $child_table_name,
+                $this->database_name,
+                $this->table_name
+            ));
         }
     }
 
@@ -111,7 +119,12 @@ class TableMeta
     public function guardIsForeignKey(string $column_name): void
     {
         if (!isset($this->ParentMeta[$column_name])) {
-            throw new OrmException(sprintf('%s.%s.%s is not a foreign key column', $this->database_name, $this->table_name, $column_name));
+            throw new OrmException(sprintf(
+                '%s.%s.%s is not a foreign key column',
+                $this->database_name,
+                $this->table_name,
+                $column_name
+            ));
         }
     }
 }

@@ -26,9 +26,13 @@ class ModelSetGetTest extends MySqlTestBase
      *
      * @throws OrmException
      */
-    public function testGetSetSingleColumn(string $column_name, mixed $value, mixed $expected_value, string $expected_error): void
-    {
-        $model = self::$Orm->Model('datatypes');
+    public function testGetSetSingleColumn(
+        string $column_name,
+        mixed $value,
+        mixed $expected_value,
+        string $expected_error
+    ): void {
+        $model = self::$orm->model('datatypes');
 
         if (!empty($expected_error)) {
             self::expectExceptionMessage($expected_error);
@@ -45,7 +49,6 @@ class ModelSetGetTest extends MySqlTestBase
 
             self::assertEquals($expected_value, $reload->get($column_name));
         }
-
     }
 
     /**
@@ -53,12 +56,12 @@ class ModelSetGetTest extends MySqlTestBase
      */
     public static function providerForGetSetSingleColumn(): array
     {
-        $minDate = new Date('1000-01-01');
-        $maxDate = new Date('9999-12-31');
+        $min_date = new Date('1000-01-01');
+        $max_date = new Date('9999-12-31');
         $date = new Date('2023-05-24');
 
-        $minDateTime = new DateTime('1000-01-01 00:00:00');
-        $maxDateTime = new DateTime('9999-12-31 23:59:59');
+        $min_datetime = new DateTime('1000-01-01 00:00:00');
+        $max_datetime = new DateTime('9999-12-31 23:59:59');
         $datetime = new DateTime('2023-05-24 13:58:45');
         $datetime_string = $datetime->format('Y-m-d H:i:s');
 
@@ -106,15 +109,15 @@ class ModelSetGetTest extends MySqlTestBase
 
             29 => ['date', 1, null, 'could not convert to date'],
             30 => ['date', new Date('0999-01-01'), null, 'out of range for date'],
-            31 => ['date', $minDate, $minDate, ''],
-            32 => ['date', $maxDate, $maxDate, ''],
+            31 => ['date', $min_date, $min_date, ''],
+            32 => ['date', $max_date, $max_date, ''],
             33 => ['date', $date, $date, ''],
 
             34 => ['datetime', 1, null, 'could not convert to DateTime'],
             35 => ['datetime', new stdClass(), null, 'expected datetime, got stdClass'],
             36 => ['datetime', new DateTime('0999-01-01'), null, 'out of range for date'],
-            37 => ['datetime', $minDateTime, $minDateTime, ''],
-            38 => ['datetime', $maxDateTime, $maxDateTime, ''],
+            37 => ['datetime', $min_datetime, $min_datetime, ''],
+            38 => ['datetime', $max_datetime, $max_datetime, ''],
             39 => ['datetime', $datetime, $datetime, ''],
             40 => ['datetime', $datetime_string, $datetime, ''],
 
@@ -234,7 +237,7 @@ class ModelSetGetTest extends MySqlTestBase
      */
     public function testSetManyRollsBackOnError(): void
     {
-        $user = self::$Orm->Model('users');
+        $user = self::$orm->model('users');
         $user->set('name', 'foo');
 
         self::expectExceptionMessage('expected varchar(45), got DateTime');
@@ -253,7 +256,7 @@ class ModelSetGetTest extends MySqlTestBase
      */
     public function testSetManyWorks(): void
     {
-        $user = self::$Orm->Model('users');
+        $user = self::$orm->model('users');
         $user->set(['id' => 1, 'name' => 'foo']);
 
         self::assertEquals(['id' => 1, 'name' => 'foo'], $user->get(['id', 'name']));
@@ -266,9 +269,8 @@ class ModelSetGetTest extends MySqlTestBase
      */
     public function testGetWithNoParamsReturnsAllFields(): void
     {
-        $user = self::$Orm->Model('users');
+        $user = self::$orm->model('users');
 
         self::assertEquals(['id' => null, 'name' => null, 'password' => null], $user->get());
     }
-
 }
