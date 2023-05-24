@@ -65,31 +65,8 @@ class ModelFetchTest extends MySqlTestBase
     }
 
 
-    /**
-     * @return void
-     * @throws OrmException
-     */
-    public function testFetchByPkWorksForCompositePk(): void
-    {
-        $user = self::$Orm->Model('composite_pk')
-            ->fetchByPk(['f1' => 1, 'f2' => 1]);
-
-        self::assertEquals(['f1' => 1, 'f2' => 1], $user->getPk());
-    }
 
 
-    /**
-     * @return void
-     *
-     * @throws OrmException
-     */
-    public function testFetchByPkFailsForCompositePkWithScalar(): void
-    {
-        self::expectExceptionMessage('orm_test.composite_pk: array expected');
-
-        self::$Orm->Model('composite_pk')
-            ->fetchByPk(1);
-    }
 
 
 

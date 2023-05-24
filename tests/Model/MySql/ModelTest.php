@@ -15,9 +15,10 @@ class ModelTest extends MySqlTestBase
      *
      * @throws OrmException
      */
-    public function testConstructorFailsWithInvalidTable(): void {
-
+    public function testConstructorFailsWithInvalidTable(): void
+    {
         self::expectExceptionMessage('table invalid-table not found in orm_test');
+
         self::$Orm->Model('invalid-table');
     }
 
