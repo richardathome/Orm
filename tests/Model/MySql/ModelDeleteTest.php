@@ -10,7 +10,6 @@ use Richbuilds\Orm\OrmException;
  */
 class ModelDeleteTest extends MySqlTestBase
 {
-
     /**
      * @return void
      *
@@ -18,7 +17,6 @@ class ModelDeleteTest extends MySqlTestBase
      */
     public function testDeleteWorks(): void
     {
-
         $model = self::$orm->model('users')
             ->set([
                 'name'=>uniqid('name', true),
@@ -40,7 +38,6 @@ class ModelDeleteTest extends MySqlTestBase
      */
     public function testDeleteFailsWithDependencies(): void
     {
-
         $model = self::$orm->model('users')
             ->set([
                 'name'=>uniqid('name', true),
@@ -64,7 +61,6 @@ class ModelDeleteTest extends MySqlTestBase
      */
     public function testDeleteFailsWithNoPk(): void
     {
-
         self::expectExceptionMessage('primary key not set');
 
         self::$orm->model('users')->delete();

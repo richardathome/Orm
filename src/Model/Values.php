@@ -18,13 +18,13 @@ class Values
     private array $values = [];
 
     /**
-     * @param Driver $Driver
+     * @param Driver $driver
      *
-     * @param TableMeta $TableMeta
+     * @param TableMeta $tableMeta
      */
     public function __construct(
-        private readonly Driver    $Driver,
-        private readonly TableMeta $TableMeta
+        private readonly Driver    $driver,
+        private readonly TableMeta $tableMeta
     ) {
     }
 
@@ -44,7 +44,7 @@ class Values
             // get many
 
             if (empty($column_name)) {
-                $column_name = array_keys($this->TableMeta->ColumnMeta);
+                $column_name = array_keys($this->tableMeta->columnMeta);
             }
 
             $values = [];
@@ -57,7 +57,7 @@ class Values
         }
 
         // get one
-        $this->TableMeta->guardHasColumn($column_name);
+        $this->tableMeta->guardHasColumn($column_name);
 
         return $this->values[$column_name] ?? null;
     }
@@ -80,11 +80,11 @@ class Values
             return $this->setMany($column_name);
         }
 
-        if (isset($this->TableMeta->ChildrenMeta[$column_name])) {
+        if (isset($this->tableMeta->childMeta[$column_name])) {
             return $this->setChildren($column_name, $value);
         }
 
-        if (isset($this->TableMeta->ParentMeta[$column_name])) {
+        if (isset($this->tableMeta->ParentMeta[$column_name])) {
             if (is_array($value)) {
                 return $this->setParentArray($column_name, $value);
             }
@@ -97,9 +97,9 @@ class Values
         }
 
         // set a simple value
-        $this->TableMeta->guardHasColumn($column_name);
+        $this->tableMeta->guardHasColumn($column_name);
 
-        $this->values[$column_name] = $this->TableMeta->ColumnMeta[$column_name]->toPhp($value);
+        $this->values[$column_name] = $this->tableMeta->columnMeta[$column_name]->toPhp($value);
 
         return $this;
     }
@@ -146,28 +146,28 @@ class Values
         if (!is_array($children)) {
             throw new OrmException(sprintf(
                 '%s.%s.%s: expected array got %s',
-                $this->TableMeta->database_name,
-                $this->TableMeta->table_name,
+                $this->tableMeta->database_name,
+                $this->tableMeta->table_name,
                 $children_table_name,
                 get_debug_type($children)
             ));
         }
 
-        $this->TableMeta->guardHasChild($children_table_name);
+        $this->tableMeta->guardHasChild($children_table_name);
 
         foreach ($children as $key => $child_values) {
             if ($child_values instanceof Model) {
                 $model = $child_values;
             } else {
-                $model = new Model($this->Driver, $children_table_name);
+                $model = new Model($this->driver, $children_table_name);
                 $model->set($child_values);
             }
 
             if ($children_table_name !== $model->tableMeta->table_name) {
                 throw new OrmException(sprintf(
                     '%s.%s.%s: expected %s got %s',
-                    $this->TableMeta->database_name,
-                    $this->TableMeta->table_name,
+                    $this->tableMeta->database_name,
+                    $this->tableMeta->table_name,
                     $children_table_name,
                     $children_table_name,
                     $model->tableMeta->table_name
@@ -193,11 +193,11 @@ class Values
      */
     private function setParentArray(string $parent_column_name, array $parent_values): self
     {
-        $this->TableMeta->guardIsForeignKey($parent_column_name);
+        $this->tableMeta->guardIsForeignKey($parent_column_name);
 
         // test $parent_values valid for the parent
-        $parent_meta = $this->TableMeta->ParentMeta[$parent_column_name];
-        $parent_model = new Model($this->Driver, $parent_meta->referenced_table_name);
+        $parent_meta = $this->tableMeta->ParentMeta[$parent_column_name];
+        $parent_model = new Model($this->driver, $parent_meta->referenced_table_name);
         $parent_model->set($parent_values);
 
         // values are valid
@@ -218,15 +218,15 @@ class Values
      */
     private function setParentModel(string $parent_column_name, Model $parent_model): self
     {
-        $this->TableMeta->guardIsForeignKey($parent_column_name);
+        $this->tableMeta->guardIsForeignKey($parent_column_name);
 
-        $referenced_table_name = $this->TableMeta->ParentMeta[$parent_column_name]->referenced_table_name;
+        $referenced_table_name = $this->tableMeta->ParentMeta[$parent_column_name]->referenced_table_name;
 
         if ($referenced_table_name !== $parent_model->tableMeta->table_name) {
             throw new OrmException(sprintf(
                 '%s.%s.%s: expected %s, got %s',
-                $this->TableMeta->database_name,
-                $this->TableMeta->table_name,
+                $this->tableMeta->database_name,
+                $this->tableMeta->table_name,
                 $parent_column_name,
                 $referenced_table_name,
                 $parent_model->tableMeta->table_name
@@ -250,22 +250,22 @@ class Values
      */
     private function setParentReference(string $column_name, mixed $value): self
     {
-        $this->TableMeta->guardIsForeignKey($column_name);
+        $this->tableMeta->guardIsForeignKey($column_name);
 
-        $value = $this->TableMeta->ColumnMeta[$column_name]->toPhp($value);
+        $value = $this->tableMeta->columnMeta[$column_name]->toPhp($value);
 
         if ($value !== null) {
-            $parent_fk = $this->TableMeta->ParentMeta[$column_name];
+            $parent_fk = $this->tableMeta->ParentMeta[$column_name];
 
             // ensure foreign key is valid by trying to load the foreign key model
             // TODO: Will fail for composite key
             try {
-                (new Model($this->Driver, $parent_fk->referenced_table_name))->fetchByPk($value);
+                (new Model($this->driver, $parent_fk->referenced_table_name))->fetchByPk($value);
             } catch (OrmException $e) {
                 throw new OrmException(sprintf(
                     '%s.%s.%s: %s',
-                    $this->TableMeta->database_name,
-                    $this->TableMeta->table_name,
+                    $this->tableMeta->database_name,
+                    $this->tableMeta->table_name,
                     $column_name,
                     $e->getMessage()
                 ));
@@ -287,7 +287,7 @@ class Values
     {
         $values = $this->values;
 
-        foreach (array_keys($this->TableMeta->ChildrenMeta) as $child_table_name) {
+        foreach (array_keys($this->tableMeta->childMeta) as $child_table_name) {
             if (isset($values[$child_table_name])) {
                 unset($values[$child_table_name]);
             }

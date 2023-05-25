@@ -14,18 +14,18 @@ class TableMeta
     /**
      * @param string $database_name
      * @param string $table_name
-     * @param array<string,ColumnMeta> $ColumnMeta
+     * @param array<string,ColumnMeta> $columnMeta
      * @param array<string> $pk_columns
      * @param array<string,FkMeta> $ParentMeta
-     * @param array<string,FkMeta> $ChildrenMeta
+     * @param array<string,FkMeta> $childMeta
      */
     public function __construct(
         public readonly string $database_name,
         public readonly string $table_name,
-        public readonly array  $ColumnMeta,
+        public readonly array  $columnMeta,
         public array           $pk_columns,
         public array           $ParentMeta,
-        public array           $ChildrenMeta
+        public array $childMeta
     ) {
     }
 
@@ -45,7 +45,7 @@ class TableMeta
         // they are treated as such for this test
 
         // NOTE: Potential bug here: what if ChildMeta has table names that match a foreign key column name?
-        $columns = array_merge(array_keys($this->ColumnMeta), array_keys($this->ChildrenMeta));
+        $columns = array_merge(array_keys($this->columnMeta), array_keys($this->childMeta));
 
         if (!in_array($column_name, $columns)) {
             throw new OrmException(sprintf(
@@ -98,7 +98,7 @@ class TableMeta
      */
     public function guardHasChild(string $child_table_name): void
     {
-        if (!isset($this->ChildrenMeta[$child_table_name])) {
+        if (!isset($this->childMeta[$child_table_name])) {
             throw new OrmException(sprintf(
                 '%s is not a child of %s.%s',
                 $child_table_name,

@@ -181,7 +181,7 @@ class Model
             throw new OrmException('multi-column foreign keys not supported');
         }
 
-        $child_column_name = $this->tableMeta->ChildrenMeta[$child_table_name]->referenced_column_name;
+        $child_column_name = $this->tableMeta->childMeta[$child_table_name]->referenced_column_name;
 
         $conditions[$child_column_name] = $pk_value[$this->tableMeta->pk_columns[0]];
 
@@ -263,7 +263,7 @@ class Model
         $values = $this->values->getColumnValues();
 
         foreach ($values as $column_name => $value) {
-            $values[$column_name] = $this->tableMeta->ColumnMeta[$column_name]->toSql($value);
+            $values[$column_name] = $this->tableMeta->columnMeta[$column_name]->toSql($value);
         }
 
         if ($this->isPkNull()) {
@@ -333,7 +333,7 @@ class Model
      */
     private function saveChildren(): void
     {
-        foreach ($this->tableMeta->ChildrenMeta as $child_table_name => $child_meta) {
+        foreach ($this->tableMeta->childMeta as $child_table_name => $child_meta) {
             if ($this->values->hasColumn($child_table_name)) {
                 $children = $this->values->get($child_table_name);
 
