@@ -46,6 +46,24 @@ class ColumnMeta
     ) {
     }
 
+
+    /**
+     * @return string
+     */
+    public function humanize(): string
+    {
+        $human = $this->column_name;
+
+        $human = str_replace('_', ' ', $human);
+        $human = ucwords($human);
+
+        if ($human == 'Id') {
+            $human = 'ID';
+        }
+
+        return $human;
+    }
+
     /**
      * Checks $value is valid for it's mysql type and cast it to its PHP type
      *
