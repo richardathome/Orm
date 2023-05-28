@@ -85,7 +85,8 @@ class ColumnMeta
             }
 
             $value = match ($this->data_type) {
-                'int', 'tinyint', 'smallint', 'mediumint', 'bigint',
+                'tinyint'=>$this->toTinyInt($value),
+                'int', 'smallint', 'mediumint', 'bigint',
                 'bit', 'year'
                 => $this->toInt($value),
                 'char', 'varchar',
@@ -510,5 +511,16 @@ class ColumnMeta
             'set' => join(',', $value),
             default => throw new RuntimeException('unhandled type ' . $this->data_type)
         };
+    }
+
+    private function toTinyInt(mixed $value): int
+    {
+        $type = $this->data_type;
+
+        if (!is_scalar($value)) {
+            throw new OrmException(sprintf('expected %s, got %s', $type, get_debug_type($value)));
+        }
+
+        return (bool)$value ? 1: 0;
     }
 }
