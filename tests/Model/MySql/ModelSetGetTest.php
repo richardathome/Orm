@@ -76,11 +76,11 @@ class ModelSetGetTest extends MySqlTestBase
             ['not_null', null, null, 'cannot be null'],
             ['not_null', 'foo', 'foo', ''],
 
-            ['bigint_unsigned', 'foo', null, 'expected unsigned bigint, got string'],
-            ['bigint_unsigned', -1, null, 'out of range for unsigned bigint'],
+            ['bigint_unsigned', 'foo', null, 'expected bigint unsigned, got string'],
+            ['bigint_unsigned', -1, null, 'out of range for bigint unsigned'],
             ['bigint_unsigned', 1, '1', ''],
 
-            ['bigint_signed', 'foo', null, 'expected signed bigint, got string'],
+            ['bigint_signed', 'foo', null, 'expected bigint, got string'],
             ['bigint_signed', -1, '-1', ''],
             ['bigint_signed', 1, '1', ''],
 
@@ -88,9 +88,9 @@ class ModelSetGetTest extends MySqlTestBase
             ['binary', '123456789', null, 'too long for binary(8)'],
             ['binary', '00000000', '00000000', ''],
 
-            ['bit', $datetime, null, 'expected signed bit, got DateTime'],
-            ['bit', -1, null, 'out of range for signed bit'],
-            ['bit', 256, null, 'out of range for signed bit'],
+            ['bit', $datetime, null, 'expected bit(8)'],
+            ['bit', -1, null, 'out of range for bit(8)'],
+            ['bit', 256, null, 'out of range for bit(8)'],
             ['bit', 0, 0, ''],
             ['bit', 1, 1, ''],
 
@@ -148,8 +148,8 @@ class ModelSetGetTest extends MySqlTestBase
             ['float', $datetime, null, 'expected signed float(12,0), got DateTime'],
             ['float', -1, -1.0, ''],
 
-            ['int_unsigned', $datetime, null, 'expected unsigned int, got DateTime'],
-            ['int_unsigned', -1, null, 'out of range for unsigned int'],
+            ['int_unsigned', $datetime, null, 'expected int unsigned, got DateTime'],
+            ['int_unsigned', -1, null, 'out of range for int unsigned'],
             ['int_unsigned', 0, 0, ''],
 
             ['longblob', $datetime, null, 'expected longblob(4294967295), got DateTime'],
@@ -166,11 +166,11 @@ class ModelSetGetTest extends MySqlTestBase
             ['longtext', $datetime, null, 'expected longtext(4294967295), got DateTime'],
             ['longtext', 'foo', 'foo', ''],
 
-            ['mediumint_unsigned', $datetime, null, 'expected unsigned mediumint, got DateTime'],
-            ['mediumint_unsigned', -1, null, 'out of range for unsigned mediumint'],
+            ['mediumint_unsigned', $datetime, null, 'expected mediumint unsigned, got DateTime'],
+            ['mediumint_unsigned', -1, null, 'out of range for mediumint unsigned'],
             ['mediumint_unsigned', 1, 1, ''],
 
-            ['mediumint_signed', $datetime, null, 'expected signed mediumint, got DateTime'],
+            ['mediumint_signed', $datetime, null, 'expected mediumint, got DateTime'],
             ['mediumint_signed', -1, -1, ''],
             ['mediumint_signed', 0, 0, ''],
 
@@ -182,11 +182,11 @@ class ModelSetGetTest extends MySqlTestBase
             ['set', 'one', ['one'], ''],
             ['set', ['one', 'three'], ['one', 'three'], ''],
 
-            ['smallint_unsigned', $datetime, null, 'expected unsigned smallint, got DateTime'],
-            ['smallint_unsigned', -1, null, 'out of range for unsigned smallint'],
+            ['smallint_unsigned', $datetime, null, 'expected smallint unsigned, got DateTime'],
+            ['smallint_unsigned', -1, null, ' out of range for smallint unsigned'],
             ['smallint_unsigned', 1, 1, ''],
 
-            ['smallint_signed', $datetime, null, 'expected signed smallint, got DateTime'],
+            ['smallint_signed', $datetime, null, 'expected smallint, got DateTime'],
             ['smallint_signed', -1, -1, ''],
             ['smallint_signed', 1, 1, ''],
 
@@ -223,8 +223,8 @@ class ModelSetGetTest extends MySqlTestBase
             ['varchar', '123456789', null, 'too long for varchar(8)'],
             ['varchar', '12345678', '12345678', ''],
 
-            ['year', $datetime, null, 'expected signed year, got DateTime'],
-            ['year', -1, null, 'out of range for signed year'],
+            ['year', $datetime, null, 'expected year, got DateTime'],
+            ['year', -1, null, 'out of range for year'],
             ['year', 1968, 1968, ''],
         ];
     }

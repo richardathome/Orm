@@ -50,7 +50,8 @@ class TableMeta
         if (!in_array($column_name, $columns)) {
             throw new OrmException(sprintf(
                 'unknown column %s in %s.%s',
-                $column_name, $this->database_name,
+                $column_name,
+                $this->database_name,
                 $this->table_name
             ));
         }

@@ -85,7 +85,7 @@ class ColumnMeta
             }
 
             $value = match ($this->data_type) {
-                'tinyint'=>$this->toTinyInt($value),
+                'tinyint' => $this->toTinyInt($value),
                 'int', 'smallint', 'mediumint', 'bigint',
                 'bit', 'year'
                 => $this->toInt($value),
@@ -121,23 +121,7 @@ class ColumnMeta
         }
     }
 
-    /**
-     * Checks $value is in range for this column type
-     *
-     * @param mixed $value
-     * @return mixed
-     *
-     * @throws OrmException
-     */
-    public function guardInRange(mixed $value): mixed
-    {
 
-        if ($value < $this->min_value || $value > $this->max_value) {
-            throw new OrmException(sprintf('out of range for %s', $this->data_type));
-        }
-
-        return $value;
-    }
 
 
     /**
@@ -151,18 +135,33 @@ class ColumnMeta
      */
     private function toInt(mixed $value): int|string
     {
-        $type = sprintf('%s %s', $this->is_signed ? 'signed' : 'unsigned', $this->data_type);
+        $type = sprintf(
+            '%s %s',
+            $this->is_signed ? 'signed' : 'unsigned',
+            $this->data_type
+        );
 
-        if (!is_scalar($value)
-            || preg_match('/^-?\d+$/', (string)$value) === 0) {
-            throw new OrmException(sprintf('expected %s, got %s', $type, get_debug_type($value)));
-        }
+        $type = $this->column_type;
+
+        $this->guard(
+            !is_scalar($value)
+            || preg_match('/^-?\d+$/', (string)$value) === 0,
+            sprintf(
+                'expected %s, got %s',
+                $type,
+                get_debug_type($value)
+            )
+        );
 
         $bc_value = (string)$value;
 
-        if (bccomp($bc_value, (string)$this->min_value) < 0 || bccomp($bc_value, (string)$this->max_value) > 0) {
-            throw new OrmException(sprintf('out of range for %s', $type));
-        }
+        $this->guard(
+            bccomp($bc_value, (string)$this->min_value) < 0 || bccomp($bc_value, (string)$this->max_value) > 0,
+            sprintf(
+                'out of range for %s',
+                $type
+            )
+        );
 
         if ((int)$value === $value) {
             return $value;
@@ -185,15 +184,17 @@ class ColumnMeta
     {
         $type = sprintf('%s(%s)', $this->data_type, $this->max_character_length);
 
-        if (!is_scalar($value)) {
-            throw new OrmException(sprintf('expected %s, got %s', $type, get_debug_type($value)));
-        }
+        $this->guardIsScalar($value, $type);
 
         $value = (string)$value;
 
-        if (strlen($value) > $this->max_character_length) {
-            throw new OrmException(sprintf('too long for %s', $type));
-        }
+        $this->guard(
+            strlen($value) > $this->max_character_length,
+            sprintf(
+                'too long for %s',
+                $type
+            )
+        );
 
         return $value;
     }
@@ -216,13 +217,21 @@ class ColumnMeta
             try {
                 $value = new Date((string)$value);
             } catch (Throwable) {
-                throw new OrmException(sprintf('could not convert to %s', $type));
+                throw new OrmException(sprintf(
+                    'could not convert to %s',
+                    $type
+                ));
             }
         }
 
-        if (!$value instanceof Date) {
-            throw new OrmException(sprintf('expected %s, got %s', $type, get_debug_type($value)));
-        }
+        $this->guard(
+            !$value instanceof Date,
+            sprintf(
+                'expected %s, got %s',
+                $type,
+                get_debug_type($value)
+            )
+        );
 
         $value = $this->guardInRange($value);
 
@@ -251,9 +260,14 @@ class ColumnMeta
             }
         }
 
-        if (!$value instanceof DateTime) {
-            throw new OrmException(sprintf('expected %s, got %s', $type, get_debug_type($value)));
-        }
+        $this->guard(
+            !$value instanceof DateTime,
+            sprintf(
+                'expected %s, got %s',
+                $type,
+                get_debug_type($value)
+            )
+        );
 
         $value = $this->guardInRange($value);
 
@@ -280,9 +294,7 @@ class ColumnMeta
             $this->scale
         );
 
-        if (!is_scalar($value)) {
-            throw new OrmException(sprintf('expected %s, got %s', $type, get_debug_type($value)));
-        }
+        $this->guardIsScalar($value, $type);
 
         $value = (string)$value;
 
@@ -293,10 +305,13 @@ class ColumnMeta
             ? "/^-?\d{1,$p}(?:\.\d{1,$this->scale})?$/"
             : "/^\d{1,$p}(?:\.\d{1,$this->scale})?$/";
 
-        // Check if the value matches the regex pattern
-        if (preg_match($pattern, $value) === 0) {
-            throw new OrmException(sprintf('out of range for %s', $type));
-        }
+        $this->guard(
+            preg_match($pattern, $value) === 0,
+            sprintf(
+                'out of range for %s',
+                $type
+            )
+        );
 
         return $value;
     }
@@ -321,19 +336,27 @@ class ColumnMeta
             $this->scale
         );
 
-        if (!is_numeric($value)) {
-            throw new OrmException(sprintf('expected %s, got %s', $type, get_debug_type($value)));
-        }
+        $this->guard(
+            !is_numeric($value),
+            sprintf(
+                'expected %s, got %s',
+                $type,
+                get_debug_type($value)
+            )
+        );
 
         $value = (string)$value;
 
         // Build the regex pattern based on the is_signed parameter
         $pattern = $this->is_signed ? '/^-?\d+(\.\d+)?$/i' : '/^\d+(\.\d+)?$/i';
 
-        // Check if the value matches the regex pattern
-        if (!preg_match($pattern, $value)) {
-            throw new OrmException(sprintf('out of range for %s', $type));
-        }
+        $this->guard(
+            !preg_match($pattern, $value),
+            sprintf(
+                'out of range for %s',
+                $type
+            )
+        );
 
         $value = $this->guardInRange($value);
 
@@ -353,15 +376,17 @@ class ColumnMeta
     {
         $type = sprintf('%s', $this->column_type);
 
-        if (!is_scalar($value)) {
-            throw new OrmException(sprintf('expected %s, got %s', $type, get_debug_type($value)));
-        }
+        $this->guardIsScalar($value, $type);
 
         $value = (string)$value;
 
-        if (!in_array($value, $this->options)) {
-            throw new OrmException(sprintf('invalid %s value', $type));
-        }
+        $this->guard(
+            !in_array($value, $this->options),
+            sprintf(
+                'invalid %s value',
+                $type
+            )
+        );
 
         return $value;
     }
@@ -385,9 +410,14 @@ class ColumnMeta
             $this->scale
         );
 
-        if (!is_numeric($value)) {
-            throw new OrmException(sprintf('expected %s, got %s', $type, get_debug_type($value)));
-        }
+        $this->guard(
+            !is_numeric($value),
+            sprintf(
+                'expected %s, got %s',
+                $type,
+                get_debug_type($value)
+            )
+        );
 
         $value = (float)$value;
 
@@ -414,16 +444,14 @@ class ColumnMeta
             return $value;
         }
 
-        if (!is_scalar($value)) {
-            throw new OrmException(sprintf('expected %s, got %s', $type, get_debug_type($value)));
-        }
+        $this->guardIsScalar($value, $type);
 
         $value = json_decode((string)$value, true);
 
-        if ($value === null) {
-            throw new OrmException('invalid json');
-        }
-
+        $this->guard(
+            $value === null,
+            'invalid json'
+        );
 
         return $value;
     }
@@ -446,14 +474,23 @@ class ColumnMeta
             $value = explode(',', (string)$value);
         }
 
-        if (!is_array($value)) {
-            throw new OrmException(sprintf('expected %s, got %s', $type, get_debug_type($value)));
-        }
+        $this->guard(
+            !is_array($value),
+            sprintf(
+                'expected %s, got %s',
+                $type,
+                get_debug_type($value)
+            )
+        );
 
         foreach ($value as $option) {
-            if (!in_array($option, $this->options)) {
-                throw new OrmException(sprintf('invalid value for %s', $type));
-            }
+            $this->guard(
+                !in_array($option, $this->options),
+                sprintf(
+                    'invalid value for %s',
+                    $type
+                )
+            );
         }
 
         return $value;
@@ -473,15 +510,14 @@ class ColumnMeta
     {
         $type = $this->data_type;
 
-        if (!is_scalar($value)) {
-            throw new OrmException(sprintf('expected %s, got %s', $type, get_debug_type($value)));
-        }
+        $this->guardIsScalar($value, $type);
 
         $value = (string)$value;
 
-        if (!preg_match('/^(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d$/', $value)) {
-            throw new OrmException('invalid time format');
-        }
+        $this->guard(
+            !preg_match('/^(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d$/', $value),
+            'invalid time format'
+        );
 
         return $value;
     }
@@ -513,14 +549,78 @@ class ColumnMeta
         };
     }
 
+    /**
+     * @param mixed $value
+     *
+     * @return int
+     *
+     * @throws OrmException
+     */
     private function toTinyInt(mixed $value): int
     {
         $type = $this->data_type;
 
-        if (!is_scalar($value)) {
-            throw new OrmException(sprintf('expected %s, got %s', $type, get_debug_type($value)));
-        }
+        $this->guardIsScalar($value, $type);
 
-        return (bool)$value ? 1: 0;
+        return $value ? 1 : 0;
+    }
+
+    /**
+     * @param bool $expression
+     *
+     * @param string $message
+     *
+     * @return void
+     *
+     * @throws OrmException
+     */
+    private function guard(bool $expression, string $message): void
+    {
+        if ($expression) {
+            throw new OrmException($message);
+        }
+    }
+
+    /**
+     * @param mixed $value
+     *
+     * @param string $type
+     *
+     * @return void
+     *
+     * @throws OrmException
+     */
+    private function guardIsScalar(mixed $value, string $type): void
+    {
+        $this->guard(
+            !is_scalar($value),
+            sprintf(
+                'expected %s, got %s',
+                $type,
+                get_debug_type($value)
+            )
+        );
+    }
+
+    /**
+     * Checks $value is in range for this column type
+     *
+     * @param mixed $value
+     * @return mixed
+     *
+     * @throws OrmException
+     */
+    private function guardInRange(mixed $value): mixed
+    {
+        $this->guard(
+            $value < $this->min_value || $value > $this->max_value,
+            sprintf(
+                'out of range for %s',
+                $this->data_type
+            )
+        );
+
+
+        return $value;
     }
 }

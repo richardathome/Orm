@@ -63,7 +63,11 @@ class MySqlDriver extends Driver
             ]);
 
             if (empty($rows)) {
-                throw new OrmException(sprintf('table %s not found in %s', $table_name, $this->databaseName));
+                throw new OrmException(sprintf(
+                    'table %s not found in %s',
+                    $table_name,
+                    $this->databaseName
+                ));
             }
 
             /**
@@ -96,7 +100,8 @@ class MySqlDriver extends Driver
 
                     $column_type = $column_meta['column_type'];
                     $data_type = $column_meta['data_type'];
-                    $is_signed = !str_contains($column_meta['column_type'], ' unsigned') || $data_type === 'bit';
+                    $is_signed = !str_contains($column_meta['column_type'], ' unsigned')
+                        || $data_type === 'bit';
                     $precision = $column_meta['precision'] ?? 0;
                     $scale = $column_meta['scale'] ?? 0;
                     $max_character_length = $column_meta['max_character_length'] ?? 0;
@@ -194,7 +199,10 @@ class MySqlDriver extends Driver
 
         if (!isset($min_values[$data_type])) {
             // @codeCoverageIgnoreStart
-            throw new RuntimeException(sprintf('MySqlDriver::getMinValue(): unhandled type signed %s', $data_type));
+            throw new RuntimeException(sprintf(
+                'MySqlDriver::getMinValue(): unhandled type signed %s',
+                $data_type
+            ));
             // @codeCoverageIgnoreEnd
         }
 
