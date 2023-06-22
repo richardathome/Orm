@@ -1,7 +1,6 @@
 [![RichBuilds Components](/docs/richbuilds_logo.png)](https://richbuilds.com)
-![ORM](/docs/orm_logo.png)
 
-# ORM
+# 🔗 ORM
 A wireless, typesafe ORM for PHP 8.1. 
 
 Currently only MySql data sources are supported, but Sqlite and Postgres are planned.
