@@ -72,6 +72,17 @@ abstract class Driver
     abstract public function delete(TableMeta $table_meta, array $conditions): void;
 
     /**
+     * Returns true if the row exists
+     *
+     * @param TableMeta $tableMeta
+     *
+     * @param array<string,mixed> $conditions
+     *
+     * @return bool
+     */
+    abstract public function exists(TableMeta $tableMeta, array $conditions): bool;
+
+    /**
      * Ensure $pdo is the correct driver type
      *
      * @param PDO $pdo

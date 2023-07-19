@@ -333,4 +333,13 @@ class MySqlDriver extends Driver
 
         $this->prepareAndExec($sql, $conditions);
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function exists(TableMeta $tableMeta, array $conditions): bool
+    {
+        $found = $this->fetchFirstBy($tableMeta, $conditions);
+        return !empty($found);
+    }
 }

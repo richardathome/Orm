@@ -271,20 +271,26 @@ class Model
 
             $this->values->set($this->tableMeta->pk_columns[0], $insert_id);
         } else {
+            // NOTE: There has to be a better way to do this without querying the db
+            $exists = $this->driver->exists($this->tableMeta, $this->getPk());
 
-            /**
-             * @var array<string,mixed> $conditions
-             */
-            $conditions = [];
+            if (!$exists) {
+                $this->driver->insert($this->tableMeta, $values);
+            } else {
+                /**
+                 * @var array<string,mixed> $conditions
+                 */
+                $conditions = [];
 
-            foreach ($this->tableMeta->pk_columns as $column_name) {
-                $conditions[$column_name] = $this->values->get($column_name);
-            }
+                foreach ($this->tableMeta->pk_columns as $column_name) {
+                    $conditions[$column_name] = $this->values->get($column_name);
+                }
 
-            $affected = $this->driver->update($this->tableMeta, $values, $conditions);
+                $affected = $this->driver->update($this->tableMeta, $values, $conditions);
 
-            if ($affected !== 1) {
-                throw new RuntimeException('impossible?');
+                if ($affected !== 1) {
+                    throw new RuntimeException('impossible?');
+                }
             }
         }
 
