@@ -163,7 +163,7 @@ abstract class Driver
                 [$name, $comparator] = explode(' ', $name);
             }
 
-            if ($comparator === 'IN') {
+            if (strtoupper($comparator) === 'IN') {
                 $value = is_array($value) ? $value : [$value];
 
                 foreach ($value as $k => $v) {

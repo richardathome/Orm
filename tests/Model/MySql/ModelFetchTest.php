@@ -101,4 +101,18 @@ class ModelFetchTest extends MySqlTestBase
 
         $user->fetchChildren('invalid-child-table');
     }
+
+    /**
+     * @return void
+     * @throws OrmException
+     */
+    public function testFetchWithInClauseWorks(): void
+    {
+
+        $user = self::$orm->model('users')->fetchBy([
+            'id in'=> [1,2]
+        ]);
+
+        self::assertEquals(1, $user->get('id'));
+    }
 }

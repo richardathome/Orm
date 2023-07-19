@@ -69,6 +69,9 @@ class TableMeta
     public function guardHasColumns(array $column_names = []): void
     {
         foreach ($column_names as $column_name) {
+            if (str_contains($column_name, ' ')) {
+                $column_name = explode(' ', $column_name)[0];
+            }
             $this->guardHasColumn($column_name);
         }
     }
