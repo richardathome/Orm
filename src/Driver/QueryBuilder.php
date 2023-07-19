@@ -70,6 +70,10 @@ abstract class QueryBuilder
                 $placeholders = [];
                 $value = is_array($value) ? $value : [$value];
 
+                if (empty($value)) {
+                    continue;
+                }
+
                 foreach ($value as $index => $item) {
                     $placeholder = ':' . $column_name . '_value_' . $index;
                     $placeholders[] = $placeholder;

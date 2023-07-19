@@ -115,4 +115,18 @@ class ModelFetchTest extends MySqlTestBase
 
         self::assertEquals(1, $user->get('id'));
     }
+
+    /**
+     * @return void
+     * @throws OrmException
+     */
+    public function testFetchWithEmptyInClauseWorks(): void
+    {
+
+        $user = self::$orm->model('users')->fetchBy([
+            'id in'=> []
+        ]);
+
+        self::assertEquals(1, $user->get('id'));
+    }
 }

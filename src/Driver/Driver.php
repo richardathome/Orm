@@ -166,6 +166,10 @@ abstract class Driver
             if (strtoupper($comparator) === 'IN') {
                 $value = is_array($value) ? $value : [$value];
 
+                if (empty($value)) {
+                    continue;
+                }
+
                 foreach ($value as $k => $v) {
                     $stmt->bindValue(':' . $name . '_value_' . $k, $v);
                 }
